@@ -1,0 +1,14 @@
+---
+title: "SSB_gang test"
+author: "Tyra LG"
+date: '2022-06-29'
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+##Dette er en test
+
+Hei venner.
