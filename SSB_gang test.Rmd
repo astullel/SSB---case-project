@@ -12,3 +12,5 @@ knitr::opts_chunk$set(echo = TRUE)
 ##Dette er en test
 
 Hei venner.
+
+Hei venner og venner og venner til venner. 
