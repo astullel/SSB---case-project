@@ -98,3 +98,40 @@ page %>%
   str_remove_all(pattern = regex("\\r"))
 ```
 
+
+
+## Hele "Om statistikken" fra én statistikk
+
+Klarte ved hjelp av denne koden å finne alle seksjonene under "Om statistikken" for "Inntekter, personlig næringsdrivende".
+
+Link: https://www.ssb.no/inntekt-og-forbruk/inntekt-og-formue/statistikk/inntekter-personlig-naeringsdrivende
+
+```{r}
+rm(list = ls())
+
+url <- paste0("https://www.ssb.no/inntekt-og-forbruk/inntekt-og-formue/statistikk/inntekter-personlig-naeringsdrivende")
+
+# Husk å endre til deres egen path:
+filename <- paste0("../Data/Inntekter_personlig_naeringsdrivende.html")
+
+download_html(
+  url = url,
+  file = filename
+)
+
+page <- read_html(x = filename, encoding = "UTF-8")
+
+# regex('div\[id="om-statistikken.*\]')
+
+noder <- page %>%
+  html_nodes('div[id^="om-statistikken"]') %>% # må jeg bruke html_nodes() etterhvert når jeg skal trekke ut flere?
+  html_text2() %>% 
+  str_remove_all(pattern = regex("\\n")) %>% 
+  str_remove_all(pattern = regex("\\r"))
+
+noder
+```
+
+Problemer:
+- Mye whitespace
+- Character string, ikke tibble/table/matrix/systematisert. Bare en lang tekst uten organisering.
