@@ -1,0 +1,58 @@
+---
+title: "Webscraping2"
+output: pdf_document
+---
+
+```{r setup}
+library(tidyverse)
+library(rvest)
+```
+
+## Kode fra dag 7
+
+Men skreddersydd til ssb-casen vår.
+
+```{r}
+links <- read_html("https://www.ssb.no/") %>%
+  html_node() %>%
+  html_elements() %>%
+  html_attr() %>%
+  str_extract() %>%
+  na.omit() %>%
+  str_c()
+```
+
+```{r}
+# Step 2: Download all the webpages from the links you just made
+linkstopic <- str_remove(links, "https://en.wikipedia.org//wiki/") 
+for(i in 1:length(links)) { # For all the links... 
+   
+  download.file(links[[i]], 
+                destfile = str_c("./links/", linkstopic[i], ".html")) 
+  # Download one html-file after another into the folder 
+   
+    Sys.sleep(2) 
+  # Setting a timer of two seconds each time we download a webpage.  
+}
+```
+
+```{r}
+# Step 3: Loop over every link and extract the text using the same procedure as shown before
+info <- list()  
+# Make a list-object where you can put the output from the loop 
+for (i in 1:length(links)) { 
+# For each i in every element from place number one to the last place in links (given by length(links)) 
+   
+  page <- read_html(links[[i]])  
+  # Read the html-page for each i 
+   
+  page <- page %>% # Use this page 
+    html_elements("p") %>% # And fetch the paragraph elements 
+    html_text() # Then extract the text from these elements 
+   
+  info[[i]] <- page  
+  # Place the text for each link into its respective place in the info-object
+   
+}
+```
+
