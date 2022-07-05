@@ -15,16 +15,16 @@ Her laster vi ned de første hovedkategoriene på forsiden til SSB. Det er 23 li
 ```{r}
 ssb <- download_html(
   url = "https://www.ssb.no/",
-  file = "../Data/SSB.html"
+  file = "./Data/SSB.html"
 )
 
 # hovedkategorier <- ["/arbeid-og-lonn"]
 
-hovedkategorier <- read_html("../Data/SSB.html") %>%
+hovedkategorier <- read_html("./Data/SSB.html") %>%
   html_nodes('a[class="ssb-link with-icon"]') %>% # klassenavnet for 'hovedkategoriene', vi leser ut hver node som oppfyller dette kravet
   html_attr("href") %>% #forteller at det er en link vi vil ha
   str_c("https://ssb.no", .) #setter sammen hva vi henter med html_nodes med dette
-hovedkategorier
+
 ```
 
 Laster ned alle nettsidene:
@@ -37,33 +37,44 @@ hovedkategori_lastet <- str_remove(hovedkategorier, "https://ssb.no")
 
 for(i in 1:length(hovedkategorier)) {
   download.file(hovedkategorier[[i]], 
-                destfile = str_c("../Data/hovedkategorier/", hovedkategori_lastet[i], ".html")) 
+                destfile = str_c("./Data/hovedkategorier/", hovedkategori_lastet[i], ".html")) 
   # Download one html-file after another into the folder hovedkategorier
     Sys.sleep(2) 
   # Setting a timer of two seconds each time we download a webpage.  
 }
 ```
-```{r}
-str1 = "hei"
-str2 = "på"
-paste(str1, str2, sep="")
-read_html(hovedkategorier_lastet[[1]])  
-```
 
 ##underkategorier
-Lagrer bare en liste med underkategorier, må få opprettet en liste for hver hovedkategori i for-løkken. Nå blir det bare 23 underkategorier og. Buu. 
+Lager en liste for hver hovedkategori med alle underkategori html pathene, nå kan vi ha en løkke som går gjennom listen i listen for å laste ned sidene 
 ```{r}
-# Make a list-object where you can put the output from the loop 
+
 for (i in 1:length(hovedkategori_lastet)) { 
-  underkategorier <- list() 
 # For each i in every element from place number one to the last place in hovedkategorier_lastet (given by length(hovedkategorier_lastet)) 
   filnavn = paste("Data/hovedkategorier", hovedkategori_lastet[i], ".html", sep="")
   # Read the html-page for each i 
-  underkategorier[i] <- read_html(filnavn)   %>% # Use this page 
+  tmp <- read_html(filnavn)   %>% # Use this page 
     html_nodes('a[class="ssb-category-link"]') %>% #again with the nodes
-    html_attr("href") # Then extract the text from these elements 
+    html_attr("href")
+    # Then extract the text from these elements 
   # Place the text for each link into its respective place in the info-object
-   
+   underkategorier[[i]] <- tmp
+}
+```
+
+```{r}
+# Make a list-object where you can put the output from the loop
+underkategorier <- list()
+tmp <- list()
+for (i in 1:length(hovedkategori_lastet)) { 
+# For each i in every element from place number one to the last place in hovedkategorier_lastet (given by length(hovedkategorier_lastet)) 
+  filnavn = paste("Data/hovedkategorier", hovedkategori_lastet[i], ".html", sep="")
+  # Read the html-page for each i 
+  tmp <- read_html(filnavn)   %>% # Use this page 
+    html_nodes('a[class="ssb-category-link"]') %>% #again with the nodes
+    html_attr("href")
+    # Then extract the text from these elements 
+  # Place the text for each link into its respective place in the info-object
+   underkategorier[i] <- tmp
 }
 ```
 
