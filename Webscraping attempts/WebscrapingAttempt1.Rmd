@@ -128,10 +128,30 @@ noder <- page %>%
   html_text2() %>% 
   str_remove_all(pattern = regex("\\n")) %>% 
   str_remove_all(pattern = regex("\\r"))
-
-noder
 ```
 
 Problemer:
 - Mye whitespace
 - Character string, ikke tibble/table/matrix/systematisert. Bare en lang tekst uten organisering.
+
+## Separerer hver seksjon
+
+ser at "noder" er "chr [1:6] og vet at nettsiden har følgende seks seksjoner:
+- Definisjoner
+- Administrative opplysninger
+- Bakgrunn
+- Produksjon
+- Nøyaktighet og pålitelighet
+- Relevant dokumentasjon
+
+Tar ut hver av disse til nytt objekt.
+
+```{r}
+definisjoner <- noder[1]
+adm_opplysninger <- noder[2]
+bakgrunn <- noder[3]
+produksjon <- noder[4]
+noyaktighet_paalitelighet <- noder[5]
+relevant_dok <- noder[6]
+```
+
