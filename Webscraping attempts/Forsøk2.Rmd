@@ -13,22 +13,41 @@ library(rvest)
 Men skreddersydd til ssb-casen vår.
 
 ```{r}
-links <- read_html("https://www.ssb.no/") %>%
-  html_node() %>%
-  html_elements() %>%
-  html_attr() %>%
-  str_extract() %>%
-  na.omit() %>%
-  str_c()
+ssb <- download_html(
+  url = "https://www.ssb.no/",
+  file = "../Data/SSB.html"
+)
+
+# kategorier <- ["/arbeid-og-lonn"]
+
+links <- read_html("../Data/SSB.html") %>%
+  html_nodes('a[class="ssb-link with-icon"]') %>% # Vet ikke om jeg trenger denne
+  # html_elements("a") %>%
+  html_attr("href") %>%
+  # str_extract("") #%>%
+  # na.omit() %>% 
+  str_c("https://ssb.no", .)
+
+links
+# FUNKER!
 ```
+
+Laste ned alle nettsidene:
+
+```{r}
+# Nå trenger vi en for-loop som laster ned alle 23 linkene som html-fil
+```
+
+Iterere gjennom alle 23 html-filene lasted ned lokalt for å finne underlinkene:
 
 ```{r}
 # Step 2: Download all the webpages from the links you just made
-linkstopic <- str_remove(links, "https://en.wikipedia.org//wiki/") 
+linkstopic <- str_remove(links, "https://ssb.no") 
+
 for(i in 1:length(links)) { # For all the links... 
    
   download.file(links[[i]], 
-                destfile = str_c("./links/", linkstopic[i], ".html")) 
+                destfile = str_c("../Data/links/", linkstopic[i], ".html")) 
   # Download one html-file after another into the folder 
    
     Sys.sleep(2) 
