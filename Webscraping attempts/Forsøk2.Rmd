@@ -47,7 +47,6 @@ for(i in 1:length(hovedkategorier)) {
 ##underkategorier
 Lager en liste for hver hovedkategori med alle underkategori html pathene, nå kan vi ha en løkke som går gjennom listen i listen for å laste ned sidene 
 ```{r}
-
 for (i in 1:length(hovedkategori_lastet)) { 
 # For each i in every element from place number one to the last place in hovedkategorier_lastet (given by length(hovedkategorier_lastet)) 
   filnavn = paste("Data/hovedkategorier", hovedkategori_lastet[i], ".html", sep="")
@@ -61,20 +60,18 @@ for (i in 1:length(hovedkategori_lastet)) {
 }
 ```
 
+Laster ned hver underkategori som html, i egen mappe i data mappen  (fungerer ikke atm)
 ```{r}
-# Make a list-object where you can put the output from the loop
-underkategorier <- list()
-tmp <- list()
-for (i in 1:length(hovedkategori_lastet)) { 
-# For each i in every element from place number one to the last place in hovedkategorier_lastet (given by length(hovedkategorier_lastet)) 
-  filnavn = paste("Data/hovedkategorier", hovedkategori_lastet[i], ".html", sep="")
-  # Read the html-page for each i 
-  tmp <- read_html(filnavn)   %>% # Use this page 
-    html_nodes('a[class="ssb-category-link"]') %>% #again with the nodes
-    html_attr("href")
-    # Then extract the text from these elements 
-  # Place the text for each link into its respective place in the info-object
-   underkategorier[i] <- tmp
+# Step 2: Download all the webpages from the links you just made
+underkategori_lastet <- str_remove(hovedkategorier, "https://ssb.no") 
+
+for(i in 1:length(underkategorier)) { #23 elementer
+  for(j in 1:length(underkategorier[i])) #hver liste i underkategori
+    download.file(underkategorier[i][j], 
+                  destfile = str_c("./Data/underkategorier/", underkategorier_lastet[i][j], ".html")) 
+    # Download one html-file after another into the folder hovedkategorier
+      Sys.sleep(2) 
+    # Setting a timer of two seconds each time we download a webpage.  
 }
 ```
 
