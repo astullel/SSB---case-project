@@ -155,3 +155,28 @@ noyaktighet_paalitelighet <- noder[5]
 relevant_dok <- noder[6]
 ```
 
+Trenger å splitte stringen i flere deler:
+
+```{r}
+def_delt <- str_split(definisjoner, " ")
+
+head(def_delt[[1]])
+```
+
+Ser fortsatt litt rart ut:-(
+
+# Ikke suksessfullt forsøk
+
+Tester å lagre rett til table:
+
+```{r}
+test2 <- page %>%
+  html_nodes('div[id^="om-statistikken"]') %>%
+  html_table()
+
+View(test2)
+typeof(test2)
+test3 <- unlist(test2)
+# Funka dårlig
+```
+
