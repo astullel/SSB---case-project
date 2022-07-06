@@ -44,8 +44,10 @@ for(i in 1:length(hovedkategorier)) {
 ```
 
 ##underkategorier
-Lager en liste for hver hovedkategori med alle underkategori html pathene, nå kan vi ha en løkke som går gjennom listen i listen for å laste ned sidene 
+Lager en liste for hver hovedkategori med alle underkategori html pathene (url linkene som vi skal bruke til å laste ned html filene), nå kan vi ha en løkke som går gjennom listen i listen for å laste ned sidene 
 ```{r}
+underkategorier <- list()
+tmp <- list()
 for (i in 1:length(hovedkategori_navn)) { 
 # For each i in every element from place number one to the last place in hovedkategorier_lastet (given by length(hovedkategorier_lastet)) 
   filnavn = paste("Data/hovedkategorier", hovedkategori_navn[i], ".html", sep="")
@@ -57,18 +59,10 @@ for (i in 1:length(hovedkategori_navn)) {
   # insert list of undercategory in list: structure
    underkategorier[[i]] <- tmp
 }
+
 ```
 
-Laster ned hver underkategori som html, i egen mappe i data mappen  (fungerer ikke atm)
-```{r}
-    liste = underkategorier[[1]]
-# We download the underkategori html files
-    string_som_skal_fjernes <- paste("https://ssb.no", hovedkategori_navn[1], sep="")
-    string_som_skal_fjernes
-  underkategori_navn <- str_remove(liste, string_som_skal_fjernes) 
-  underkategori_navn
-```
-#laster ned html filene for alle underkategoriene. Det er i disse html filene statistikken ligger. Vi må nå inn i hver statistikk, og i hver statistikk for vi kjørt program som samler inn 'om-statistikken' delen. 
+Laster ned html filene for alle underkategoriene. Det er i disse html filene statistikken ligger. Vi må nå inn i hver statistikk, og i hver statistikk for vi kjørt program som samler inn 'om-statistikken' delen. 
 
 ```{r}
 getwd()
@@ -82,12 +76,25 @@ for(i in 1:length(underkategorier)) { #23 elementer
                   destfile = str_c("./Data/underkategorier/", underkategori_navn[j], ".html")) 
     # Download one html-file after another into the folder hovedkategorier
       Sys.sleep(2) 
-    # Setting a timer of two seconds each time we download a webpage. 
+    # Setting a timer of two seconds each time we download a webpage.
   }
 }
 ```
 
-
+#statistikken hentes ut
+```{r}
+for (i in 1:length(hovedkategori_navn)) { 
+# For each i in every element from place number one to the last place in hovedkategorier_lastet (given by length(hovedkategorier_lastet)) 
+  filnavn = paste("Data/hovedkategorier", hovedkategori_navn[i], ".html", sep="")
+  # Read the html-page for each i 
+    tmp <- read_html(filnavn)   %>% # create a tmp list with the undercategories
+    html_nodes('a[class="ssb-card"]') %>% #again with the nodes
+    html_attr("href") %>% 
+    str_c("https://ssb.no", .)
+  # insert list of undercategory in list: structure
+   underkategorier[[i]] <- tmp
+}
+```
 
 ## foreløpig irrelevant
 ```{r}
@@ -106,7 +113,6 @@ for (i in 1:length(links)) {
    
   info[[i]] <- page  
   # Place the text for each link into its respective place in the info-object
-   
 }
 ```
 
