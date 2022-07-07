@@ -10,8 +10,7 @@ library(xml2)
 ```
 
 ## Kode fra dag 7
-Her laster vi ned de første linkene til hovedkategoriene på forsiden til SSB. Det er 23 linker vi laster ned. 
-  
+Her laster vi ned de første linkene til hovedkategoriene på forsiden til SSB. Det er 23 linker vi laster ned.
 ```{r}
 ssb <- download_html(
   url = "https://www.ssb.no/",
@@ -48,6 +47,7 @@ Lager en liste for hver hovedkategori med alle underkategori html pathene (url l
 ```{r}
 underkategorier <- list()
 tmp <- list()
+hovedkategori_navn[1]
 for (i in 1:length(hovedkategori_navn)) { 
 # For each i in every element from place number one to the last place in hovedkategorier_lastet (given by length(hovedkategorier_lastet)) 
   filnavn = paste("Data/hovedkategorier", hovedkategori_navn[i], ".html", sep="")
@@ -66,11 +66,12 @@ Laster ned html filene for alle underkategoriene. Det er i disse html filene sta
 
 ```{r}
 getwd()
+#underkategori_navn_liste <- list()
 for(i in 1:length(underkategorier)) { #23 elementer
     liste = underkategorier[[i]]
 # We download the underkategori html files
     string_som_skal_fjernes <- paste("https://ssb.no", hovedkategori_navn[i], sep="")
-  underkategori_navn <- str_remove(liste, string_som_skal_fjernes) 
+  underkategori_navn <- str_remove(liste, string_som_skal_fjernes)
   for(j in 1:length(liste)){
     download.file(liste[j],
                   destfile = str_c("./Data/underkategorier/", underkategori_navn[j], ".html")) 
@@ -82,37 +83,42 @@ for(i in 1:length(underkategorier)) { #23 elementer
 ```
 
 #statistikken hentes ut
+Må ha en metode som går inn i alle underkategori html filene for å få ut statistikken, før vi da kan lagre all data i om statistikken i en strukturert oversikt. 
 ```{r}
-for (i in 1:length(hovedkategori_navn)) { 
-# For each i in every element from place number one to the last place in hovedkategorier_lastet (given by length(hovedkategorier_lastet)) 
-  filnavn = paste("Data/hovedkategorier", hovedkategori_navn[i], ".html", sep="")
-  # Read the html-page for each i 
-    tmp <- read_html(filnavn)   %>% # create a tmp list with the undercategories
-    html_nodes('a[class="ssb-card"]') %>% #again with the nodes
-    html_attr("href") %>% 
-    str_c("https://ssb.no", .)
-  # insert list of undercategory in list: structure
-   underkategorier[[i]] <- tmp
+#sted for testing av koden
+getwd()
+"""
+liste <- underkategorier[[1]]
+statistikk <- list()
+for (i in 1:length(liste)){
+  statistikk_2 <- read_html(liste[i]) %>% 
+  html_nodes('div[class='ssb-card']') %>%
+  html_elements('a') %>% html_attr('href') %>% 
+  str_c('https://ssb.no', .)
+  #again with the nodes
+  statistikk[[i]]<-statistikk_2
+  #tester bare ut
 }
+"""
+tmp <- list()
+statistikk_liste <- list()
+for (i in 1:length(hovedkategori_navn)) { 
+  liste <- underkategorier[[i]]
+  tmp <- list()
+  for (i in 1:length(liste)){
+    statistikk <- read_html(liste[j]) %>% 
+    html_nodes('div[class="ssb-card"]') %>%
+    html_elements("a") %>% html_attr("href") %>% 
+    str_c("https://ssb.no", .)
+    #again with the nodes
+    #again with the nodes
+    tmp[[j]] <- statistikk
+    Sys.sleep(1)
+  }
+  statistikk_liste[[i]] <- tmp
+}
+
 ```
 
-## foreløpig irrelevant
-```{r}
-# Step 3: Loop over every link and extract the text using the same procedure as shown before
-info <- list()  
-# Make a list-object where you can put the output from the loop 
-for (i in 1:length(links)) { 
-# For each i in every element from place number one to the last place in links (given by length(links)) 
-   
-  page <- read_html(links[[i]])  
-  # Read the html-page for each i 
-   
-  page <- page %>% # Use this page 
-    html_elements("p") %>% # And fetch the paragraph elements 
-    html_text() # Then extract the text from these elements 
-   
-  info[[i]] <- page  
-  # Place the text for each link into its respective place in the info-object
-}
-```
+
 
