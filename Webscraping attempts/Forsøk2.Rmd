@@ -108,6 +108,47 @@ for (i in 1:length(hovedkategori_navn)){
 tmp
 statistikk
 ```
+## hvor mange statistikker?
+```{r}
+counter <- 1
+for (i in 1:length(statistikk)){
+  liste <- statistikk[[i]]
+  for (j in 1:length(liste)){
+    counter <- counter + 1
+  }
+}
+counter
+```
+Bytter ut / med _ i url linkene for å kunne lagre som fil
+```{r}
+statistikk_filnavn <- list()
+for (i in 1:length(statistikk)){
+  liste <- statistikk[[i]]
+  for (j in 1:length(liste)){
+    liste[j] <- str_remove(liste[j], "https://ssb.no/")
+    statistikk_filnavn <- append(statistikk_filnavn, gsub("/", "_", liste[j]))
+  }
+}
+```
 
+#laste ned html filene til alle statistikkene
+#ikke ferdig
+```{r}
+getwd()
+#underkategori_navn_liste <- list()
+for(i in 1:length(statistikk)) { #23 elementer
+  liste <- statistikk[[i]]
+# We download the underkategori html files
+  string_som_skal_fjernes <- paste("https://ssb.no", hovedkategori_navn[i], sep="")
+  statistikk_navn <- str_remove(liste, string_som_skal_fjernes)
+  for(j in 1:length(liste)){
+    download.file(liste[j],
+                  destfile = str_c("./Data/underkategorier/", underkategori_navn[j], ".html")) 
+    # Download one html-file after another into the folder hovedkategorier
+      Sys.sleep(2) 
+    # Setting a timer of two seconds each time we download a webpage.
+  }
+}
+```
 
 
