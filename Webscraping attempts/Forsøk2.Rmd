@@ -68,9 +68,9 @@ Laster ned html filene for alle underkategoriene. Det er i disse html filene sta
 getwd()
 #underkategori_navn_liste <- list()
 for(i in 1:length(underkategorier)) { #23 elementer
-    liste = underkategorier[[i]]
+  liste = underkategorier[[i]]
 # We download the underkategori html files
-    string_som_skal_fjernes <- paste("https://ssb.no", hovedkategori_navn[i], sep="")
+  string_som_skal_fjernes <- paste("https://ssb.no", hovedkategori_navn[i], sep="")
   underkategori_navn <- str_remove(liste, string_som_skal_fjernes)
   for(j in 1:length(liste)){
     download.file(liste[j],
@@ -83,41 +83,30 @@ for(i in 1:length(underkategorier)) { #23 elementer
 ```
 
 #statistikken hentes ut
-Må ha en metode som går inn i alle underkategori html filene for å få ut statistikken, før vi da kan lagre all data i om statistikken i en strukturert oversikt. 
+Metode som lager url'en til alle statistikkene, liste i liste for hver underkategori. 
 ```{r}
 #sted for testing av koden
 getwd()
-"""
-liste <- underkategorier[[1]]
 statistikk <- list()
-for (i in 1:length(liste)){
-  statistikk_2 <- read_html(liste[i]) %>% 
-  html_nodes('div[class='ssb-card']') %>%
-  html_elements('a') %>% html_attr('href') %>% 
-  str_c('https://ssb.no', .)
-  #again with the nodes
-  statistikk[[i]]<-statistikk_2
-  #tester bare ut
-}
-"""
-tmp <- list()
-statistikk_liste <- list()
-for (i in 1:length(hovedkategori_navn)) { 
+for (i in 1:length(hovedkategori_navn)){
   liste <- underkategorier[[i]]
   tmp <- list()
-  for (i in 1:length(liste)){
-    statistikk <- read_html(liste[j]) %>% 
+  string_som_skal_fjernes <- paste("https://ssb.no", hovedkategori_navn[i], sep="")
+  underkategori_navn <- str_remove(liste, string_som_skal_fjernes)
+  for (j in 1:length(liste)){
+    filnavn <- paste("./Data/underkategorier", underkategori_navn[j], ".html", sep="")
+    statistikk_2 <- read_html(filnavn) %>% 
     html_nodes('div[class="ssb-card"]') %>%
-    html_elements("a") %>% html_attr("href") %>% 
-    str_c("https://ssb.no", .)
+    html_elements('a') %>% html_attr('href') %>% 
+    str_c('https://ssb.no', .)
     #again with the nodes
-    #again with the nodes
-    tmp[[j]] <- statistikk
-    Sys.sleep(1)
+    tmp[[j]] <- statistikk_2
+    #tester bare ut
   }
-  statistikk_liste[[i]] <- tmp
+  statistikk <- append(statistikk, tmp)
 }
-
+tmp
+statistikk
 ```
 
 
