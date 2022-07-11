@@ -1,5 +1,5 @@
 ---
-title: "Webscraping2"
+title: "Samling av data"
 output: pdf_document
 ---
 
@@ -7,32 +7,45 @@ output: pdf_document
 library(tidyverse)
 library(rvest)
 library(xml2)
+library(kableExtra)
 ```
 
-## Kode fra dag 7
+# Laste ned SSB's forside
+
 Her laster vi ned de første linkene til hovedkategoriene på forsiden til SSB. Det er 23 linker vi laster ned.
-```{r}
+
+```{r, eval=FALSE}
+# Laste ned SSB's forside
 ssb <- download_html(
   url = "https://www.ssb.no/",
   file = "./Data/SSB.html"
 )
+```
 
-# hovedkategorier <- ["/arbeid-og-lonn"]
+Chunken over er satt til eval=FALSE for at den ikke skal kjøre hver gang vi Knit'er dokumentet.
 
+## Laste ned hovedkategoriene
+
+```{r}
+# Lese forsiden og finne hovedkategoriene i teksten
 hovedkategorier <- read_html("./Data/SSB.html") %>%
   html_nodes('a[class="ssb-link with-icon"]') %>% # klassenavnet for 'hovedkategoriene', vi leser ut hver node som oppfyller dette kravet
   html_attr("href") %>% #forteller at det er en link vi vil ha
   str_c("https://ssb.no", .) #setter sammen hva vi henter med html_nodes med dette
+
+
 ```
 
-Laster ned alle nettsidene:
+## Laster ned underkategoriene
 
-Iterere gjennom alle 23 html-filene lasted ned lokalt for å finne underlinkene:
+Innenfor hver (de fleste?) hovedkategori finnes en del underkategorier. Vi itererer gjennom alle 23 html-filene med hovedkategoriene lasted ned lokalt for å finne underlinkene.
 
 ```{r}
 # Step 2: Download all the webpages from the links you just made
 hovedkategori_navn <- str_remove(hovedkategorier, "https://ssb.no") 
+```
 
+```{r, eval=FALSE}
 for(i in 1:length(hovedkategorier)) {
   download.file(hovedkategorier[[i]], 
                 destfile = str_c("./Data/hovedkategorier/", hovedkategori_navn[i], ".html")) 
@@ -42,14 +55,21 @@ for(i in 1:length(hovedkategorier)) {
 }
 ```
 
-##underkategorier
-Lager en liste for hver hovedkategori med alle underkategori html pathene (url linkene som vi skal bruke til å laste ned html filene), nå kan vi ha en løkke som går gjennom listen i listen for å laste ned sidene 
+Har satt eval=FALSE på siste chunk fordi vi ikke trenger å kjøre denne koden mer enn én gang.
+
+### Strukturere underkategorier
+
+Lager en liste for hver hovedkategori med alle underkategori html-pathene (url-linkene som vi skal bruke til å laste ned html-filene), nå kan vi ha en løkke som går gjennom listen i listen for å laste ned sidene.
+
 ```{r}
 underkategorier <- list()
+
 tmp <- list()
-hovedkategori_navn[1]
+
+# hovedkategori_navn[1]
+
 for (i in 1:length(hovedkategori_navn)) { 
-# For each i in every element from place number one to the last place in hovedkategorier_lastet (given by length(hovedkategorier_lastet)) 
+# For each i in every element from place number one to the last place in hovedkategorier_navn (given by length(hovedkategorier_navn)) 
   filnavn = paste("Data/hovedkategorier", hovedkategori_navn[i], ".html", sep="")
   # Read the html-page for each i 
     tmp <- read_html(filnavn)   %>% # create a tmp list with the undercategories
@@ -62,14 +82,12 @@ for (i in 1:length(hovedkategori_navn)) {
 
 ```
 
-Laster ned html filene for alle underkategoriene. Det er i disse html filene statistikken ligger. Vi må nå inn i hver statistikk, og i hver statistikk for vi kjørt program som samler inn 'om-statistikken' delen. 
+Laster ned html-filene for alle underkategoriene. Det er i disse html-filene statistikken ligger. Vi må nå inn i hver statistikk, og i hver statistikk for vi kjørt program som samler inn 'om-statistikken'-delen. 
 
-```{r}
-getwd()
-#underkategori_navn_liste <- list()
+```{r, eval=FALSE}
 for(i in 1:length(underkategorier)) { #23 elementer
   liste = underkategorier[[i]]
-# We download the underkategori html files
+# We download the underkategori html-files
   string_som_skal_fjernes <- paste("https://ssb.no", hovedkategori_navn[i], sep="")
   underkategori_navn <- str_remove(liste, string_som_skal_fjernes)
   for(j in 1:length(liste)){
@@ -82,12 +100,15 @@ for(i in 1:length(underkategorier)) { #23 elementer
 }
 ```
 
-#statistikken hentes ut
+Satt eval=FALSE fordi chunken kun trenger å kjøres én gang.
+
+# Statistikken hentes ut
+
 Metode som lager url'en til alle statistikkene, liste i liste for hver underkategori. 
+
 ```{r}
-#sted for testing av koden
-getwd()
 statistikk <- list()
+
 for (i in 1:length(hovedkategori_navn)){
   liste <- underkategorier[[i]]
   tmp <- list()
@@ -105,23 +126,42 @@ for (i in 1:length(hovedkategori_navn)){
   }
   statistikk <- append(statistikk, tmp)
 }
-tmp
-statistikk
 ```
-## hvor mange statistikker?
+
+Se på objektene tmp og statistikk:
+
 ```{r}
-counter <- 1
+tmp %>% 
+  head(n = 1) # Ser kun på [[1]]
+
+statistikk %>% 
+  head(n = 3) # Ser kun på [[1]] til og med [[3]]
+```
+
+## Hvor mange statistikker?
+
+```{r}
+counter <- 0
+
 for (i in 1:length(statistikk)){
   liste <- statistikk[[i]]
   for (j in 1:length(liste)){
     counter <- counter + 1
   }
 }
+
 counter
 ```
-Bytter ut / med _ i url linkene for å kunne lagre som fil
+
+Vi ser at vi har 574 statistikk-linker.
+
+## Strukturere for nedlastning
+
+Bytter ut / med _ i url linkene for å kunne lagre som fil:
+
 ```{r}
 statistikk_filnavn <- list()
+
 for (i in 1:length(statistikk)){
   liste <- statistikk[[i]]
   for (j in 1:length(liste)){
@@ -131,11 +171,17 @@ for (i in 1:length(statistikk)){
 }
 ```
 
-#laste ned html filene til alle statistikkene
-#ikke ferdig
+# Laste ned statistikken
+
+Laste ned html-filene til alle statistikkene
+
+(( Ikke ferdig ))
+
 ```{r}
 getwd()
+
 #underkategori_navn_liste <- list()
+
 for(i in 1:length(statistikk)) { #23 elementer
   liste <- statistikk[[i]]
 # We download the underkategori html files
