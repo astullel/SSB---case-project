@@ -3,7 +3,7 @@ title: "Samling av data"
 output: pdf_document
 ---
 
-```{r setup}
+```{r setup, message=FALSE, warning=FALSE}
 library(tidyverse)
 library(rvest)
 library(xml2)
@@ -12,7 +12,7 @@ library(kableExtra)
 
 # Laste ned SSB's forside
 
-Her laster vi ned de første linkene til hovedkategoriene på forsiden til SSB. Det er 23 linker vi laster ned.
+Først laster vi ned hele forsiden til SSB. Deretter laster vi ned de første linkene til hovedkategoriene på forsiden til SSB. Det er 23 linker vi laster ned.
 
 ```{r, eval=FALSE}
 # Laste ned SSB's forside
@@ -29,7 +29,8 @@ Chunken over er satt til eval=FALSE for at den ikke skal kjøre hver gang vi Kni
 ```{r}
 # Lese forsiden og finne hovedkategoriene i teksten
 hovedkategorier <- read_html("./Data/SSB.html") %>%
-  html_nodes('a[class="ssb-link with-icon"]') %>% # klassenavnet for 'hovedkategoriene', vi leser ut hver node som oppfyller dette kravet
+  html_nodes('a[class="ssb-link with-icon"]') %>% # klassenavnet for 'hovedkategoriene', 
+  # vi leser ut hver node som oppfyller dette kravet
   html_attr("href") %>% #forteller at det er en link vi vil ha
   str_c("https://ssb.no", .) #setter sammen hva vi henter med html_nodes med dette
 
@@ -38,7 +39,7 @@ hovedkategorier <- read_html("./Data/SSB.html") %>%
 
 ## Laster ned underkategoriene
 
-Innenfor hver (de fleste?) hovedkategori finnes en del underkategorier. Vi itererer gjennom alle 23 html-filene med hovedkategoriene lasted ned lokalt for å finne underlinkene.
+Innenfor hver av (/de fleste?) hovedkategoriene finnes en del underkategorier. Vi itererer gjennom alle 23 html-filene med hovedkategoriene lasted ned lokalt for å finne underlinkene.
 
 ```{r}
 # Step 2: Download all the webpages from the links you just made
@@ -48,7 +49,8 @@ hovedkategori_navn <- str_remove(hovedkategorier, "https://ssb.no")
 ```{r, eval=FALSE}
 for(i in 1:length(hovedkategorier)) {
   download.file(hovedkategorier[[i]], 
-                destfile = str_c("./Data/hovedkategorier/", hovedkategori_navn[i], ".html")) 
+                destfile = str_c("./Data/hovedkategorier/", 
+                                 hovedkategori_navn[i], ".html")) 
   # Download one html-file after another into the folder hovedkategorier
     Sys.sleep(2) 
   # Setting a timer of two seconds each time we download a webpage.  
@@ -66,10 +68,9 @@ underkategorier <- list()
 
 tmp <- list()
 
-# hovedkategori_navn[1]
-
 for (i in 1:length(hovedkategori_navn)) { 
-# For each i in every element from place number one to the last place in hovedkategorier_navn (given by length(hovedkategorier_navn)) 
+# For each i in every element from place number one to the last place in hovedkategorier_navn 
+  # (given by length(hovedkategorier_navn)) 
   filnavn = paste("Data/hovedkategorier", hovedkategori_navn[i], ".html", sep="")
   # Read the html-page for each i 
     tmp <- read_html(filnavn)   %>% # create a tmp list with the undercategories
@@ -85,7 +86,7 @@ for (i in 1:length(hovedkategori_navn)) {
 Laster ned html-filene for alle underkategoriene. Det er i disse html-filene statistikken ligger. Vi må nå inn i hver statistikk, og i hver statistikk for vi kjørt program som samler inn 'om-statistikken'-delen. 
 
 ```{r, eval=FALSE}
-for(i in 1:length(underkategorier)) { #23 elementer
+for(i in 1:length(underkategorier)) { # 23 elementer
   liste = underkategorier[[i]]
 # We download the underkategori html-files
   string_som_skal_fjernes <- paste("https://ssb.no", hovedkategori_navn[i], sep="")
@@ -100,7 +101,7 @@ for(i in 1:length(underkategorier)) { #23 elementer
 }
 ```
 
-Satt eval=FALSE fordi chunken kun trenger å kjøres én gang.
+Satt eval=FALSE fordi chunken over kun trenger å kjøres én gang.
 
 # Statistikken hentes ut
 
@@ -177,7 +178,7 @@ Laste ned html-filene til alle statistikkene
 
 (( Ikke ferdig ))
 
-```{r}
+```{r, eval=FALSE}
 getwd()
 
 #underkategori_navn_liste <- list()
