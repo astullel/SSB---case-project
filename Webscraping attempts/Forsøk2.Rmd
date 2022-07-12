@@ -193,6 +193,9 @@ for(i in 1:length(statistikk)){
     # Setting a timer of two seconds each time we download a webpage
   }
 }
+
+# Sjekker antall statistikker som ble lastet ned
+length(list.files("./Data/statistikk"))
 ```
 
-For få statistikker?
+Bare 93 statistikker, for få men vet ikke hvorfor?
