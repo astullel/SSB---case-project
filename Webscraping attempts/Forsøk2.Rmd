@@ -7,7 +7,6 @@ output: pdf_document
 library(tidyverse)
 library(rvest)
 library(xml2)
-library(kableExtra)
 ```
 
 # Laste ned SSB's forside
@@ -74,7 +73,7 @@ for (i in 1:length(hovedkategori_navn)) {
   filnavn = paste("Data/hovedkategorier", hovedkategori_navn[i], ".html", sep="")
   # Read the html-page for each i 
     tmp <- read_html(filnavn)   %>% # create a tmp list with the undercategories
-    html_nodes('a[class="ssb-category-link"]') %>% #again with the nodes
+    html_nodes('a[class="ssb-category-link"]') %>% # again with the nodes
     html_attr("href") %>% 
     str_c("https://ssb.no", .)
   # insert list of undercategory in list: structure
@@ -108,7 +107,7 @@ Satt eval=FALSE fordi chunken over kun trenger å kjøres én gang.
 Metode som lager url'en til alle statistikkene, liste i liste for hver underkategori. 
 
 ```{r}
-statistikk <- list()
+statistikk <- list() # Create empty list
 
 for (i in 1:length(hovedkategori_navn)){
   liste <- underkategorier[[i]]
@@ -116,14 +115,13 @@ for (i in 1:length(hovedkategori_navn)){
   string_som_skal_fjernes <- paste("https://ssb.no", hovedkategori_navn[i], sep="")
   underkategori_navn <- str_remove(liste, string_som_skal_fjernes)
   for (j in 1:length(liste)){
-    filnavn <- paste("./Data/underkategorier", underkategori_navn[j], ".html", sep="")
-    statistikk_2 <- read_html(filnavn) %>% 
+  filnavn <- paste("./Data/underkategorier", underkategori_navn[j], ".html", sep="")
+  statistikk_2 <- read_html(filnavn) %>%
     html_nodes('div[class="ssb-card"]') %>%
-    html_elements('a') %>% html_attr('href') %>% 
-    str_c('https://ssb.no', .)
-    #again with the nodes
-    tmp[[j]] <- statistikk_2
-    #tester bare ut
+    html_elements('a') %>%
+    html_attr('href') %>% 
+    str_c('https://ssb.no', .) # again with the nodes
+  tmp[[j]] <- statistikk_2 #tester bare ut
   }
   statistikk <- append(statistikk, tmp)
 }
@@ -170,32 +168,31 @@ for (i in 1:length(statistikk)){
     statistikk_filnavn <- append(statistikk_filnavn, gsub("/", "_", liste[j]))
   }
 }
+
+length(unique(statistikk_filnavn)) # hvorfor kun 300 og ikke 574?
+# Solved: Statistikk finnes flere steder, fordi relevant for flere områder - men har kun én ansvarlig seksjon (ligger Om statistikken - Administrative opplysninger - Ansvarlig seksjon)
 ```
 
 # Laste ned statistikken
 
-Laste ned html-filene til alle statistikkene
+Laste ned html-filene til alle statistikkene:
 
 (( Ikke ferdig ))
 
 ```{r, eval=FALSE}
-getwd()
-
-#underkategori_navn_liste <- list()
-
-for(i in 1:length(statistikk)) { #23 elementer
+for(i in 1:length(statistikk)){
   liste <- statistikk[[i]]
-# We download the underkategori html files
-  string_som_skal_fjernes <- paste("https://ssb.no", hovedkategori_navn[i], sep="")
-  statistikk_navn <- str_remove(liste, string_som_skal_fjernes)
-  for(j in 1:length(liste)){
+  # We download the statistikk-files
+  statistikk_navn <- gsub("(.*?)\\/statistikk\\/", "", liste) # Fjerner første del av url'en frem til og med /statistikk/ for å lage passende filnavn
+  # print(statistikk_navn) - test
+  for (j in 1:length(liste)){
     download.file(liste[j],
-                  destfile = str_c("./Data/underkategorier/", underkategori_navn[j], ".html")) 
-    # Download one html-file after another into the folder hovedkategorier
-      Sys.sleep(2) 
-    # Setting a timer of two seconds each time we download a webpage.
+                  destfile = str_c("./Data/statistikk/", statistikk_navn[j], ".html"))
+    # Download one html-file after another into the folder statistikk
+    Sys.sleep(2)
+    # Setting a timer of two seconds each time we download a webpage
   }
 }
 ```
 
-
+For få statistikker?
