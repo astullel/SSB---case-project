@@ -218,6 +218,7 @@ for(i in 1:length(statistikk)){
 ```{r}
 # Sjekker antall statistikker som ble lastet ned
 length(list.files("./Data/statistikk"))
+length(unique(list.files("./Data/statistikk")))
 ```
 
 293 statistikker!
