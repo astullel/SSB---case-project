@@ -1,77 +1,201 @@
 ---
-title: "Webscraping2"
+title: "Samling av data"
 output: pdf_document
 ---
 
-```{r setup}
+```{r setup, message=FALSE, warning=FALSE}
 library(tidyverse)
 library(rvest)
+library(xml2)
 ```
 
-## Kode fra dag 7
+# Laste ned SSB's forside
 
-Men skreddersydd til ssb-casen vår.
+Først laster vi ned hele forsiden til SSB. Deretter laster vi ned de første linkene til hovedkategoriene på forsiden til SSB. Det er 23 linker vi laster ned.
 
-```{r}
+```{r, eval=FALSE}
+# Laste ned SSB's forside
 ssb <- download_html(
   url = "https://www.ssb.no/",
-  file = "../Data/SSB.html"
+  file = "./Data/SSB.html"
 )
-
-# kategorier <- ["/arbeid-og-lonn"]
-
-links <- read_html("../Data/SSB.html") %>%
-  html_nodes('a[class="ssb-link with-icon"]') %>% # Vet ikke om jeg trenger denne
-  # html_elements("a") %>%
-  html_attr("href") %>%
-  # str_extract("") #%>%
-  # na.omit() %>% 
-  str_c("https://ssb.no", .)
-
-links
-# FUNKER!
 ```
 
-Laste ned alle nettsidene:
+Chunken over er satt til eval=FALSE for at den ikke skal kjøre hver gang vi Knit'er dokumentet.
+
+## Laste ned hovedkategoriene
 
 ```{r}
-# Nå trenger vi en for-loop som laster ned alle 23 linkene som html-fil
+# Lese forsiden og finne hovedkategoriene i teksten
+hovedkategorier <- read_html("./Data/SSB.html") %>%
+  html_nodes('a[class="ssb-link with-icon"]') %>% # klassenavnet for 'hovedkategoriene', 
+  # vi leser ut hver node som oppfyller dette kravet
+  html_attr("href") %>% #forteller at det er en link vi vil ha
+  str_c("https://ssb.no", .) #setter sammen hva vi henter med html_nodes med dette
+
+
 ```
 
-Iterere gjennom alle 23 html-filene lasted ned lokalt for å finne underlinkene:
+## Laster ned underkategoriene
+
+Innenfor hver av (/de fleste?) hovedkategoriene finnes en del underkategorier. Vi itererer gjennom alle 23 html-filene med hovedkategoriene lasted ned lokalt for å finne underlinkene.
 
 ```{r}
 # Step 2: Download all the webpages from the links you just made
-linkstopic <- str_remove(links, "https://ssb.no") 
+hovedkategori_navn <- str_remove(hovedkategorier, "https://ssb.no") 
+```
 
-for(i in 1:length(links)) { # For all the links... 
-   
-  download.file(links[[i]], 
-                destfile = str_c("../Data/links/", linkstopic[i], ".html")) 
-  # Download one html-file after another into the folder 
-   
+```{r, eval=FALSE}
+for(i in 1:length(hovedkategorier)) {
+  download.file(hovedkategorier[[i]], 
+                destfile = str_c("./Data/hovedkategorier/", 
+                                 hovedkategori_navn[i], ".html")) 
+  # Download one html-file after another into the folder hovedkategorier
     Sys.sleep(2) 
   # Setting a timer of two seconds each time we download a webpage.  
 }
 ```
 
+Har satt eval=FALSE på siste chunk fordi vi ikke trenger å kjøre denne koden mer enn én gang.
+
+### Strukturere underkategorier
+
+Lager en liste for hver hovedkategori med alle underkategori html-pathene (url-linkene som vi skal bruke til å laste ned html-filene), nå kan vi ha en løkke som går gjennom listen i listen for å laste ned sidene.
+
 ```{r}
-# Step 3: Loop over every link and extract the text using the same procedure as shown before
-info <- list()  
-# Make a list-object where you can put the output from the loop 
-for (i in 1:length(links)) { 
-# For each i in every element from place number one to the last place in links (given by length(links)) 
-   
-  page <- read_html(links[[i]])  
+underkategorier <- list()
+
+tmp <- list()
+
+for (i in 1:length(hovedkategori_navn)) { 
+# For each i in every element from place number one to the last place in hovedkategorier_navn 
+  # (given by length(hovedkategorier_navn)) 
+  filnavn = paste("Data/hovedkategorier", hovedkategori_navn[i], ".html", sep="")
   # Read the html-page for each i 
-   
-  page <- page %>% # Use this page 
-    html_elements("p") %>% # And fetch the paragraph elements 
-    html_text() # Then extract the text from these elements 
-   
-  info[[i]] <- page  
-  # Place the text for each link into its respective place in the info-object
-   
+    tmp <- read_html(filnavn)   %>% # create a tmp list with the undercategories
+    html_nodes('a[class="ssb-category-link"]') %>% # again with the nodes
+    html_attr("href") %>% 
+    str_c("https://ssb.no", .)
+  # insert list of undercategory in list: structure
+   underkategorier[[i]] <- tmp
+}
+
+```
+
+Laster ned html-filene for alle underkategoriene. Det er i disse html-filene statistikken ligger. Vi må nå inn i hver statistikk, og i hver statistikk for vi kjørt program som samler inn 'om-statistikken'-delen. 
+
+```{r, eval=FALSE}
+for(i in 1:length(underkategorier)) { # 23 elementer
+  liste = underkategorier[[i]]
+# We download the underkategori html-files
+  string_som_skal_fjernes <- paste("https://ssb.no", hovedkategori_navn[i], sep="")
+  underkategori_navn <- str_remove(liste, string_som_skal_fjernes)
+  for(j in 1:length(liste)){
+    download.file(liste[j],
+                  destfile = str_c("./Data/underkategorier/", underkategori_navn[j], ".html")) 
+    # Download one html-file after another into the folder hovedkategorier
+      Sys.sleep(2) 
+    # Setting a timer of two seconds each time we download a webpage.
+  }
 }
 ```
 
+Satt eval=FALSE fordi chunken over kun trenger å kjøres én gang.
+
+# Statistikken hentes ut
+
+Metode som lager url'en til alle statistikkene, liste i liste for hver underkategori. 
+
+```{r}
+statistikk <- list() # Create empty list
+
+for (i in 1:length(hovedkategori_navn)){
+  liste <- underkategorier[[i]]
+  tmp <- list()
+  string_som_skal_fjernes <- paste("https://ssb.no", hovedkategori_navn[i], sep="")
+  underkategori_navn <- str_remove(liste, string_som_skal_fjernes)
+  for (j in 1:length(liste)){
+  filnavn <- paste("./Data/underkategorier", underkategori_navn[j], ".html", sep="")
+  statistikk_2 <- read_html(filnavn) %>%
+    html_nodes('div[class="ssb-card"]') %>%
+    html_elements('a') %>%
+    html_attr('href') %>% 
+    str_c('https://ssb.no', .) # again with the nodes
+  tmp[[j]] <- statistikk_2 #tester bare ut
+  }
+  statistikk <- append(statistikk, tmp)
+}
+```
+
+Se på objektene tmp og statistikk:
+
+```{r}
+tmp %>% 
+  head(n = 1) # Ser kun på [[1]]
+
+statistikk %>% 
+  head(n = 3) # Ser kun på [[1]] til og med [[3]]
+```
+
+## Hvor mange statistikker?
+
+```{r}
+counter <- 0
+
+for (i in 1:length(statistikk)){
+  liste <- statistikk[[i]]
+  for (j in 1:length(liste)){
+    counter <- counter + 1
+  }
+}
+
+counter
+```
+
+Vi ser at vi har 574 statistikk-linker.
+
+## Strukturere for nedlastning
+
+Bytter ut / med _ i url linkene for å kunne lagre som fil:
+
+```{r}
+statistikk_filnavn <- list()
+
+for (i in 1:length(statistikk)){
+  liste <- statistikk[[i]]
+  for (j in 1:length(liste)){
+    liste[j] <- str_remove(liste[j], "https://ssb.no/")
+    statistikk_filnavn <- append(statistikk_filnavn, gsub("/", "_", liste[j]))
+  }
+}
+
+length(unique(statistikk_filnavn)) # hvorfor kun 300 og ikke 574?
+# Solved: Statistikk finnes flere steder, fordi relevant for flere områder - men har kun én ansvarlig seksjon (ligger Om statistikken - Administrative opplysninger - Ansvarlig seksjon)
+```
+
+# Laste ned statistikken
+
+Laste ned html-filene til alle statistikkene:
+
+(( Ikke ferdig ))
+
+```{r, eval=FALSE}
+for(i in 1:length(statistikk)){
+  liste <- statistikk[[i]]
+  # We download the statistikk-files
+  statistikk_navn <- gsub("(.*?)\\/statistikk\\/", "", liste) # Fjerner første del av url'en frem til og med /statistikk/ for å lage passende filnavn
+  # print(statistikk_navn) - test
+  for (j in 1:length(liste)){
+    download.file(liste[j],
+                  destfile = str_c("./Data/statistikk/", statistikk_navn[j], ".html"))
+    # Download one html-file after another into the folder statistikk
+    Sys.sleep(2)
+    # Setting a timer of two seconds each time we download a webpage
+  }
+}
+
+# Sjekker antall statistikker som ble lastet ned
+length(list.files("./Data/statistikk"))
+```
+
+Bare 93 statistikker, for få men vet ikke hvorfor?
