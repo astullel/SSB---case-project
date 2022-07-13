@@ -82,6 +82,18 @@ for (i in 1:length(hovedkategori_navn)) {
 
 ```
 
+```{r}
+# # Tester å lage en tibble/df, ikke nødvendig foreløpig
+# 
+# # Possible solution:
+# test_df <- as_tibble(list(underkategorier = unlist(underkategorier)))
+# 
+# # Or:
+# test_tibble <- enframe(underkategorier) %>% 
+#   unnest()
+```
+
+
 Laster ned html-filene for alle underkategoriene. Det er i disse html-filene statistikken ligger. Vi må nå inn i hver statistikk, og i hver statistikk for vi kjørt program som samler inn 'om-statistikken'-delen. 
 
 ```{r, eval=FALSE}
@@ -125,6 +137,10 @@ for (i in 1:length(hovedkategori_navn)){
   }
   statistikk <- append(statistikk, tmp)
 }
+
+# Tester å lage en tibble, ikke nødvendig foreløpig
+# statistikk_test_tibble <- enframe(statistikk) %>% 
+#   unnest()
 ```
 
 Se på objektene tmp og statistikk:
@@ -177,25 +193,119 @@ length(unique(statistikk_filnavn)) # hvorfor kun 300 og ikke 574?
 
 Laste ned html-filene til alle statistikkene:
 
-(( Ikke ferdig ))
+ADVARSEL: ikke kjør koden, den tar 45 min. Last heller inn sidene fra mappa "statistikk".
 
 ```{r, eval=FALSE}
 for(i in 1:length(statistikk)){
   liste <- statistikk[[i]]
   # We download the statistikk-files
-  statistikk_navn <- gsub("(.*?)\\/statistikk\\/", "", liste) # Fjerner første del av url'en frem til og med /statistikk/ for å lage passende filnavn
-  # print(statistikk_navn) - test
+  statistikk_navn <- gsub("(.*?)\\/statistikk\\/", "", liste)
+  # print(statistikk_navn)
   for (j in 1:length(liste)){
-    download.file(liste[j],
-                  destfile = str_c("./Data/statistikk/", statistikk_navn[j], ".html"))
+    try(download.file(liste[j], # try() gjør at den hopper over URL'er som gir error!
+                  destfile = str_c(
+                    "./Data/statistikk/", # hvor filen skal
+                    statistikk_navn[j], # hva de skal hete
+                    ".html"))) # fil-type
     # Download one html-file after another into the folder statistikk
     Sys.sleep(2)
     # Setting a timer of two seconds each time we download a webpage
   }
 }
+```
 
+
+```{r}
 # Sjekker antall statistikker som ble lastet ned
 length(list.files("./Data/statistikk"))
 ```
 
-Bare 93 statistikker, for få men vet ikke hvorfor?
+293 statistikker!
+
+
+## ERRORs
+
+ERROR-meldinger jeg fikk av å laste ned statistikk-sidene, aka vi burde se igjennom disse meldingene og sjekke om den aktuelle statistikken har blitt lastet ned eller om vi må gjøre dette manuelt.
+
+1) Fikk error på ssb.no (hovedsiden), men det gjør ikke noe
+
+Error in download.file(liste[j], destfile = str_c("./Data/statistikk/",  : 
+  cannot open destfile './Data/statistikk/https://ssb.no.html', reason 'Invalid argument'
+
+2) 
+Error in download.file(liste[j], destfile = str_c("./Data/statistikk/",  : 
+  cannot open destfile './Data/statistikk/https://ssb.nohttps://www.ssb.no/befolkning/statistikker/befsvalbard.html', reason 'Invalid argument'
+trying URL 'https://ssb.nohttps://www.ssb.no/virksomheter-foretak-og-regnskap/virksomheter-og-foretak/statistikk/naeringer-pa-svalbard'
+Warning in download.file(liste[j], destfile = str_c("./Data/statistikk/",  :
+  InternetOpenUrl failed: 'Kan ikke kontrollere serverens navn eller adresse'
+Error in download.file(liste[j], destfile = str_c("./Data/statistikk/",  : 
+  cannot open URL 'https://ssb.nohttps://www.ssb.no/virksomheter-foretak-og-regnskap/virksomheter-og-foretak/statistikk/naeringer-pa-svalbard'
+Error in download.file(liste[j], destfile = str_c("./Data/statistikk/",  : 
+  cannot open destfile './Data/statistikk/https://ssb.nohttps://www.ssb.no/offentlig-sektor/statistikker/offseksvalbard.html', reason 'Invalid argument'
+
+
+3) 
+Error in download.file(liste[j], destfile = str_c("./Data/statistikk/",  : 
+  cannot open destfile './Data/statistikk/https://ssb.nohttps://www.ssb.no/befolkning/statistikker/befsvalbard.html', reason 'Invalid argument'
+trying URL 'https://ssb.nohttps://www.ssb.no/virksomheter-foretak-og-regnskap/virksomheter-og-foretak/statistikk/naeringer-pa-svalbard'
+Warning in download.file(liste[j], destfile = str_c("./Data/statistikk/",  :
+  InternetOpenUrl failed: 'Kan ikke kontrollere serverens navn eller adresse'
+Error in download.file(liste[j], destfile = str_c("./Data/statistikk/",  : 
+  cannot open URL 'https://ssb.nohttps://www.ssb.no/virksomheter-foretak-og-regnskap/virksomheter-og-foretak/statistikk/naeringer-pa-svalbard'
+Error in download.file(liste[j], destfile = str_c("./Data/statistikk/",  : 
+  cannot open destfile './Data/statistikk/https://ssb.nohttps://www.ssb.no/offentlig-sektor/statistikker/offseksvalbard.html', reason 'Invalid argument'
+
+4) 
+Error in download.file(liste[j], destfile = str_c("./Data/statistikk/",  : 
+  cannot open destfile './Data/statistikk/https://ssb.nohttps://www.ssb.no/befolkning/statistikker/befsvalbard.html', reason 'Invalid argument'
+trying URL 'https://ssb.nohttps://www.ssb.no/virksomheter-foretak-og-regnskap/virksomheter-og-foretak/statistikk/naeringer-pa-svalbard'
+Warning in download.file(liste[j], destfile = str_c("./Data/statistikk/",  :
+  InternetOpenUrl failed: 'Kan ikke kontrollere serverens navn eller adresse'
+Error in download.file(liste[j], destfile = str_c("./Data/statistikk/",  : 
+  cannot open URL 'https://ssb.nohttps://www.ssb.no/virksomheter-foretak-og-regnskap/virksomheter-og-foretak/statistikk/naeringer-pa-svalbard'
+Error in download.file(liste[j], destfile = str_c("./Data/statistikk/",  : 
+  cannot open destfile './Data/statistikk/https://ssb.nohttps://www.ssb.no/offentlig-sektor/statistikker/offseksvalbard.html', reason 'Invalid argument'
+
+5) 
+Error in download.file(liste[j], destfile = str_c("./Data/statistikk/",  : 
+  cannot open destfile './Data/statistikk/https://ssb.nohttps://www.ssb.no/befolkning/statistikker/befsvalbard.html', reason 'Invalid argument'
+trying URL 'https://ssb.nohttps://www.ssb.no/virksomheter-foretak-og-regnskap/virksomheter-og-foretak/statistikk/naeringer-pa-svalbard'
+Warning in download.file(liste[j], destfile = str_c("./Data/statistikk/",  :
+  InternetOpenUrl failed: 'Kan ikke kontrollere serverens navn eller adresse'
+Error in download.file(liste[j], destfile = str_c("./Data/statistikk/",  : 
+  cannot open URL 'https://ssb.nohttps://www.ssb.no/virksomheter-foretak-og-regnskap/virksomheter-og-foretak/statistikk/naeringer-pa-svalbard'
+Error in download.file(liste[j], destfile = str_c("./Data/statistikk/",  : 
+  cannot open destfile './Data/statistikk/https://ssb.nohttps://www.ssb.no/offentlig-sektor/statistikker/offseksvalbard.html', reason 'Invalid argument'
+
+6) 
+Error in download.file(liste[j], destfile = str_c("./Data/statistikk/",  : 
+  cannot open destfile './Data/statistikk/https://ssb.nohttps://www.ssb.no/befolkning/statistikker/befsvalbard.html', reason 'Invalid argument'
+trying URL 'https://ssb.nohttps://www.ssb.no/virksomheter-foretak-og-regnskap/virksomheter-og-foretak/statistikk/naeringer-pa-svalbard'
+Warning in download.file(liste[j], destfile = str_c("./Data/statistikk/",  :
+  InternetOpenUrl failed: 'Kan ikke kontrollere serverens navn eller adresse'
+Error in download.file(liste[j], destfile = str_c("./Data/statistikk/",  : 
+  cannot open URL 'https://ssb.nohttps://www.ssb.no/virksomheter-foretak-og-regnskap/virksomheter-og-foretak/statistikk/naeringer-pa-svalbard'
+Error in download.file(liste[j], destfile = str_c("./Data/statistikk/",  : 
+  cannot open destfile './Data/statistikk/https://ssb.nohttps://www.ssb.no/offentlig-sektor/statistikker/offseksvalbard.html', reason 'Invalid argument'
+
+7) 
+Error in download.file(liste[j], destfile = str_c("./Data/statistikk/",  : 
+  cannot open destfile './Data/statistikk/https://ssb.nohttps://www.ssb.no/befolkning/statistikker/befsvalbard.html', reason 'Invalid argument'
+trying URL 'https://ssb.nohttps://www.ssb.no/virksomheter-foretak-og-regnskap/virksomheter-og-foretak/statistikk/naeringer-pa-svalbard'
+Warning in download.file(liste[j], destfile = str_c("./Data/statistikk/",  :
+  InternetOpenUrl failed: 'Kan ikke kontrollere serverens navn eller adresse'
+Error in download.file(liste[j], destfile = str_c("./Data/statistikk/",  : 
+  cannot open URL 'https://ssb.nohttps://www.ssb.no/virksomheter-foretak-og-regnskap/virksomheter-og-foretak/statistikk/naeringer-pa-svalbard'
+Error in download.file(liste[j], destfile = str_c("./Data/statistikk/",  : 
+  cannot open destfile './Data/statistikk/https://ssb.nohttps://www.ssb.no/offentlig-sektor/statistikker/offseksvalbard.html', reason 'Invalid argument'
+
+8)
+Error in download.file(liste[j], destfile = str_c("./Data/statistikk/",  : 
+  cannot open destfile './Data/statistikk/https://ssb.nohttp://www.ssb.no/kommunefakta/kostra.html', reason 'Invalid argument'
+Error in download.file(liste[j], destfile = str_c("./Data/statistikk/",  : 
+  cannot open destfile './Data/statistikk/https://ssb.nohttps://www.ssb.no/innrapportering/kostra-innrapportering.html', reason 'Invalid argument'
+Error in download.file(liste[j], destfile = str_c("./Data/statistikk/",  : 
+  cannot open destfile './Data/statistikk/https://ssb.nohttps://www.ssb.no/kostra/om-kostra.html', reason 'Invalid argument'
+
+
+
