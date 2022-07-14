@@ -1,0 +1,237 @@
+---
+title: "ssb_webscraping_attempt"
+output: pdf_document
+---
+
+```{r setup}
+library(tidyverse)
+library(xml2)
+library(rvest)
+```
+
+## Webscraping
+
+I find that I need what is within the tabs: <a class="ssb-link with-icon" href="arbeid-og-lønn" tabindex="-1">...</a>
+
+```{r}
+url <- paste0("https://www.ssb.no/arbeid-og-lonn/sysselsetting/statistikk/arbeidskraftundersokelsen")
+
+getwd()
+filename <- "../Data/arbeidskraftundersokelsen.html"
+```
+
+
+```{r}
+download_html(
+  url = url,
+  file = filename
+)
+```
+
+```{r}
+page <- read_html(x = filename, encoding = "UTF-8")
+page
+
+# page %>%
+#   html_node("body") %>%
+#   html_text2()
+```
+
+```{r}
+html_elements(x = page, css = 'section')
+```
+
+```{r}
+tmp <- html_elements(x = page, css = 'section[id="om-statistikken"]')
+```
+
+```{r}
+omstat <- page %>% 
+  html_node(css = 'section[div="om-statistikken"]') %>% 
+  html_text2()
+
+head(omstat)
+```
+
+Funka ikke, grrrrrr
+
+
+
+# Attempt 2
+
+found link to "https://www.ssb.no/arbeid-og-lonn" within the main ssb.no source code. 
+
+```{r}
+url <- paste0("https://www.ssb.no/inntekt-og-forbruk/inntekt-og-formue/statistikk/inntekter-personlig-naeringsdrivende")
+
+filename <- paste0("../Data/Inntekter_personlig_naeringsdrivende.html")
+
+download_html(
+  url = url,
+  file = filename
+)
+
+page <- read_html(x = filename, encoding = "UTF-8")
+page
+```
+
+'div[id="om-statistikken"]'
+evt.om-statistikken-noetekst-mertekst
+
+```{r}
+html_elements(x = page,
+              css = 'div[id="om-statistikken"]')
+```
+
+
+## Suksess
+
+Klarte å trekke ut definisjons-seksjonen av statistikken "Inntekter, personlig næringsdrivende"! Kan brukes på alle de andre seksjonene<3
+
+Link: https://www.ssb.no/inntekt-og-forbruk/inntekt-og-formue/statistikk/inntekter-personlig-naeringsdrivende
+
+###Alle seksjonene under "om statistikken" trekkes ut med følgende koder under, og writeLines() får teksten til å seksjoneres på lik måte som i browser.
+
+**Definisjoner**
+```{r}
+page %>%
+  html_node('div[id="om-statistikken-definisjoner"]') %>%
+  html_text2() %>% 
+  writeLines() %>%
+  str_remove_all(pattern = regex("\\n")) %>% 
+  str_remove_all(pattern = regex("\\r"))
+```
+**Administrative opplysninger**
+```{r}
+page %>%
+  html_node('div[id="om-statistikken-administrative_opplysninger"]') %>% #MERK! i motsetning til andre steder så skrives undertittelen "administrative opplysninger" med understrek i syntax, IKKE bindestrek! får feilmld om man bruker bindestrek her
+  html_text2() %>% 
+  writeLines() %>%
+  str_remove_all(pattern = regex("\\n")) %>% 
+  str_remove_all(pattern = regex("\\r"))
+```
+
+**Bakgrunn**
+```{r}
+page %>%
+  html_node('div[id="om-statistikken-bakgrunn"]') %>%
+  html_text2() %>% 
+  writeLines() %>%
+  str_remove_all(pattern = regex("\\n")) %>% 
+  str_remove_all(pattern = regex("\\r"))
+```
+
+**Produksjon**
+```{r}
+page %>%
+  html_node('div[id="om-statistikken-produksjon"]') %>%
+  html_text2() %>% 
+  writeLines() %>%
+  str_remove_all(pattern = regex("\\n")) %>% 
+  str_remove_all(pattern = regex("\\r"))
+```
+
+**Nøyakighet og pålitelighet (feilkilder)**
+```{r}
+page %>%
+  html_node('div[id="om-statistikken-feilkilder"]') %>%
+  html_text2() %>% 
+  writeLines() %>%
+  str_remove_all(pattern = regex("\\n")) %>% 
+  str_remove_all(pattern = regex("\\r"))
+```
+
+```{r}
+page %>%
+  html_node('div[id="om-statistikken-relevant-dokumentasjon"]') %>%
+  html_text2() %>% 
+  writeLines() %>%
+  str_remove_all(pattern = regex("\\n")) %>% 
+  str_remove_all(pattern = regex("\\r"))
+```
+
+```
+
+
+TRENGS dette under nå siden vi har klart å trekke ut alt i systematisert form?
+
+## Hele "Om statistikken" fra én statistikk
+
+Klarte ved hjelp av denne koden å finne alle seksjonene under "Om statistikken" for "Inntekter, personlig næringsdrivende".
+
+Link: https://www.ssb.no/inntekt-og-forbruk/inntekt-og-formue/statistikk/inntekter-personlig-naeringsdrivende
+
+```{r}
+rm(list = ls())
+
+url <- paste0("https://www.ssb.no/inntekt-og-forbruk/inntekt-og-formue/statistikk/inntekter-personlig-naeringsdrivende")
+
+# Husk å endre til deres egen path:
+filename <- paste0("../Data/Inntekter_personlig_naeringsdrivende.html")
+
+download_html(
+  url = url,
+  file = filename
+)
+
+page <- read_html(x = filename, encoding = "UTF-8")
+
+# regex('div\[id="om-statistikken.*\]')
+
+noder <- page %>%
+  html_nodes('div[id^="om-statistikken"]') %>% # må jeg bruke html_nodes() etterhvert når jeg skal trekke ut flere?
+  html_text2() %>% 
+  str_remove_all(pattern = regex("\\n")) %>% 
+  str_remove_all(pattern = regex("\\r"))
+```
+
+Problemer:
+- Mye whitespace
+- Character string, ikke tibble/table/matrix/systematisert. Bare en lang tekst uten organisering.
+
+## Separerer hver seksjon
+
+ser at "noder" er "chr [1:6] og vet at nettsiden har følgende seks seksjoner:
+- Definisjoner
+- Administrative opplysninger
+- Bakgrunn
+- Produksjon
+- Nøyaktighet og pålitelighet
+- Relevant dokumentasjon
+
+Tar ut hver av disse til nytt objekt.
+
+```{r}
+definisjoner <- noder[1]
+adm_opplysninger <- noder[2]
+bakgrunn <- noder[3]
+produksjon <- noder[4]
+noyaktighet_paalitelighet <- noder[5]
+relevant_dok <- noder[6]
+```
+
+Trenger å splitte stringen i flere deler:
+
+```{r}
+def_delt <- str_split(definisjoner, " ")
+
+head(def_delt[[1]])
+```
+
+Ser fortsatt litt rart ut:-(
+
+# Ikke suksessfullt forsøk
+
+Tester å lagre rett til table:
+
+```{r}
+test2 <- page %>%
+  html_nodes('div[id^="om-statistikken"]') %>%
+  html_table()
+
+View(test2)
+typeof(test2)
+test3 <- unlist(test2)
+# Funka dårlig
+```
+
