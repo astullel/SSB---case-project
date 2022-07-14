@@ -140,7 +140,7 @@ page %>%
   str_remove_all(pattern = regex("\\n")) %>% 
   str_remove_all(pattern = regex("\\r"))
 ```
-
+**Relevant dokumentasjon**
 ```{r}
 page %>%
   html_node('div[id="om-statistikken-relevant-dokumentasjon"]') %>%
