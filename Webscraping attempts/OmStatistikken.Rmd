@@ -1,0 +1,101 @@
+---
+title: "Om statistikken"
+output: pdf_document
+---
+
+```{r setup, warning=FALSE, echo=FALSE}
+library(tidyverse)
+library(xml2)
+library(rvest)
+```
+
+## Om Statistikken
+
+Hente ut Om statistikken fra hver statistikk-html-side.
+
+```{r, eval=FALSE}
+getwd() # sjekker path/working directory
+
+# Pathen til statistikkene er "./Data/statistikk
+
+filnavn <- list.files("./Data/statistikk") # lagre alle filnavnene i en str-liste
+
+```
+
+Nå som vi har alle filnavnene i en liste kan vi iterere gjennom og lese:
+
+```{r}
+for(i in filnavn){
+  url <- paste0("./Data/statistikk/", i)
+
+  page <- read_html(x = url, encoding = "UTF-8")
+  
+  def <- page %>%
+  html_node('div[id="om-statistikken-definisjoner"]') %>%
+  html_text2() %>% 
+  # writeLines() %>%
+  str_remove_all(pattern = regex("\\n")) %>% 
+  str_remove_all(pattern = regex("\\r"))
+
+adm <- page %>%
+  html_node('div[id="om-statistikken-administrative_opplysninger"]') %>% #MERK! i motsetning til andre steder så skrives undertittelen "administrative opplysninger" med understrek i syntax, IKKE bindestrek! får feilmld om man bruker bindestrek her
+  html_text2() %>% 
+  # writeLines() %>%
+  str_remove_all(pattern = regex("\\n")) %>% 
+  str_remove_all(pattern = regex("\\r"))
+
+bak <- page %>%
+  html_node('div[id="om-statistikken-bakgrunn"]') %>%
+  html_text2() %>% 
+  # writeLines() %>%
+  str_remove_all(pattern = regex("\\n")) %>% 
+  str_remove_all(pattern = regex("\\r"))
+
+prod <- page %>%
+  html_node('div[id="om-statistikken-produksjon"]') %>%
+  html_text2() %>% 
+  # writeLines() %>%
+  str_remove_all(pattern = regex("\\n")) %>% 
+  str_remove_all(pattern = regex("\\r"))
+
+feil <- page %>%
+  html_node('div[id="om-statistikken-feilkilder"]') %>%
+  html_text2() %>% 
+  # writeLines() %>%
+  str_remove_all(pattern = regex("\\n")) %>% 
+  str_remove_all(pattern = regex("\\r"))
+
+reldok <- page %>%
+  html_node('div[id="om-statistikken-relevant-dokumentasjon"]') %>%
+  html_text2() %>% 
+  # writeLines() %>%
+  str_remove_all(pattern = regex("\\n")) %>% 
+  str_remove_all(pattern = regex("\\r"))
+
+# Her må vi også få inn "Om sesongjustering" når det er fiksa
+  
+assign(paste0("df_omstat_", i), 
+       data.frame(
+         "Definisjoner" = def,
+         "Administrative opplysninger" = adm,
+         "Bakgrunn" = bak,
+         "Produksjon" = prod,
+         "Feilkilder" = feil,
+         "Relevant_dokumentasjon" = reldok
+       ))
+}
+
+```
+
+# Dele opp i seksjoner
+
+(( IKKE FERDIG ))
+
+Jeg ser at hvert objekt er  en chr-string [1:6] (evt. mindre ettersom de har færre "seksjoner" under Om statistikken) og vet at "Om statistikken" bør ha følgende seks seksjoner:
+
+- Definisjoner
+- Administrative opplysninger
+- Bakgrunn
+- Produksjon
+- Nøyaktighet og pålitelighet
+- Relevant dokumentasjon
