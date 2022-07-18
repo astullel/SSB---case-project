@@ -150,8 +150,6 @@ page %>%
   str_remove_all(pattern = regex("\\r"))
 ```
 
-```
-
 
 TRENGS dette under nå siden vi har klart å trekke ut alt i systematisert form?
 
