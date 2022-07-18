@@ -22,7 +22,7 @@ filnavn <- list.files("./Data/statistikk") # lagre alle filnavnene i en str-list
 
 ```
 
-Nå som vi har alle filnavnene i en liste kan vi iterere gjennom og lese:
+Nå som vi har alle filnavnene i en liste kan vi iterere gjennom disse, dele hver statistikk i seksjoner og lage datasett for hver statistikk.
 
 ```{r}
 for(i in filnavn){
@@ -37,65 +37,97 @@ for(i in filnavn){
   str_remove_all(pattern = regex("\\n")) %>% 
   str_remove_all(pattern = regex("\\r"))
 
-adm <- page %>%
-  html_node('div[id="om-statistikken-administrative_opplysninger"]') %>% #MERK! i motsetning til andre steder så skrives undertittelen "administrative opplysninger" med understrek i syntax, IKKE bindestrek! får feilmld om man bruker bindestrek her
-  html_text2() %>% 
-  # writeLines() %>%
-  str_remove_all(pattern = regex("\\n")) %>% 
-  str_remove_all(pattern = regex("\\r"))
+  adm <- page %>%
+    html_node('div[id="om-statistikken-administrative_opplysninger"]') %>%
+    #MERK! i motsetning til andre steder så skrives undertittelen "administrative opplysninger" med understrek i syntax, IKKE bindestrek! får feilmld om man bruker bindestrek her
+    html_text2() %>% 
+    # writeLines() %>%
+    str_remove_all(pattern = regex("\\n")) %>% 
+    str_remove_all(pattern = regex("\\r"))
 
-bak <- page %>%
-  html_node('div[id="om-statistikken-bakgrunn"]') %>%
-  html_text2() %>% 
-  # writeLines() %>%
-  str_remove_all(pattern = regex("\\n")) %>% 
-  str_remove_all(pattern = regex("\\r"))
+  bak <- page %>%
+    html_node('div[id="om-statistikken-bakgrunn"]') %>%
+    html_text2() %>% 
+    # writeLines() %>%
+    str_remove_all(pattern = regex("\\n")) %>% 
+    str_remove_all(pattern = regex("\\r"))
 
-prod <- page %>%
-  html_node('div[id="om-statistikken-produksjon"]') %>%
-  html_text2() %>% 
-  # writeLines() %>%
-  str_remove_all(pattern = regex("\\n")) %>% 
-  str_remove_all(pattern = regex("\\r"))
+  prod <- page %>%
+    html_node('div[id="om-statistikken-produksjon"]') %>%
+    html_text2() %>% 
+    # writeLines() %>%
+    str_remove_all(pattern = regex("\\n")) %>% 
+    str_remove_all(pattern = regex("\\r"))
 
-feil <- page %>%
-  html_node('div[id="om-statistikken-feilkilder"]') %>%
-  html_text2() %>% 
-  # writeLines() %>%
-  str_remove_all(pattern = regex("\\n")) %>% 
-  str_remove_all(pattern = regex("\\r"))
+  feil <- page %>%
+    html_node('div[id="om-statistikken-feilkilder"]') %>%
+    html_text2() %>% 
+    # writeLines() %>%
+    str_remove_all(pattern = regex("\\n")) %>% 
+    str_remove_all(pattern = regex("\\r"))
 
-reldok <- page %>%
-  html_node('div[id="om-statistikken-relevant-dokumentasjon"]') %>%
-  html_text2() %>% 
-  # writeLines() %>%
-  str_remove_all(pattern = regex("\\n")) %>% 
-  str_remove_all(pattern = regex("\\r"))
+  reldok <- page %>%
+    html_node('div[id="om-statistikken-relevant-dokumentasjon"]') %>%
+    html_text2() %>% 
+    # writeLines() %>%
+    str_remove_all(pattern = regex("\\n")) %>% 
+    str_remove_all(pattern = regex("\\r"))
 
-# Her må vi også få inn "Om sesongjustering" når det er fiksa
+  # Her må vi også få inn "Om sesongjustering" når det er fiksa
   
-assign(paste0("df_omstat_", i), 
-       data.frame(
-         "Definisjoner" = def,
-         "Administrative opplysninger" = adm,
-         "Bakgrunn" = bak,
-         "Produksjon" = prod,
-         "Feilkilder" = feil,
-         "Relevant_dokumentasjon" = reldok
+  assign(paste0("df_omstat_", i), 
+         data.frame(
+           "Definisjoner" = def,
+           "Administrative_opplysninger" = adm,
+           "Bakgrunn" = bak,
+           "Produksjon" = prod,
+           "Feilkilder" = feil,
+           "Relevant_dokumentasjon" = reldok
        ))
 }
 
 ```
 
-# Dele opp i seksjoner
+# Mangler
 
-(( IKKE FERDIG ))
+Først endre filnavn-stringen slik at filnavnene matcher de som ligger i R.
 
-Jeg ser at hvert objekt er  en chr-string [1:6] (evt. mindre ettersom de har færre "seksjoner" under Om statistikken) og vet at "Om statistikken" bør ha følgende seks seksjoner:
+```{r}
+leggtil <- "df_omstat_"
+filnavn <- paste0(leggtil, filnavn)
+```
 
-- Definisjoner
-- Administrative opplysninger
-- Bakgrunn
-- Produksjon
-- Nøyaktighet og pålitelighet
-- Relevant dokumentasjon
+Iterere gjennom ...
+
+```{r}
+# Lager tom df
+big_data <- data.frame()
+
+# Lager dataframe med alle statistikkene's seksjoner i
+for(i in 1:length(filnavn)){
+  dat <- get(filnavn[i])
+  
+  hvilkenstatistikk <- filnavn[i] %>% 
+    str_replace("df_omstat_", "")
+  
+  dat$Statistikk <- hvilkenstatistikk
+  
+  big_data <- rbind(big_data, dat)
+}
+
+# Tester
+big_data$Statistikk[1]
+```
+
+Telle antall NA per seksjon
+
+```{r}
+# Antall statistikker per seksjon hvor hele seksjonen mangler
+sum(is.na(big_data$Definisjoner)) # 4
+sum(is.na(big_data$Administrative_opplysninger)) # 1
+sum(is.na(big_data$Bakgrunn)) # 0
+sum(is.na(big_data$Produksjon)) # 1
+sum(is.na(big_data$Feilkilder)) # 6
+sum(is.na(big_data$Relevant_dokumentasjon)) # 202
+```
+
