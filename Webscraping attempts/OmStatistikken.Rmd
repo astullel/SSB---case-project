@@ -280,7 +280,13 @@ reldok <- df %>%
   select(navn_statistikk, reldok)
 ```
 
+Fordi det som alltid må brukes for å sjekke NA, definisjoener, dokumentasjon osv. er hvilken seksjon som er ansvarlig lager egen tabell med for dette
 ```{r}
-
+#ansvarlig seksjon
+seksjon <- administrative %>% 
+  select(navn_statistikk, adm.seksjon)
 ```
+
+Når vi nå vil sjekke de forskjellige opplysningene opp mot seksjon, bruker vi diverse joins. (nytt dokument?)
+
 
