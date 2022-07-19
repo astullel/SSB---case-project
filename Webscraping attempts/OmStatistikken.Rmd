@@ -35,13 +35,15 @@ Har fjernet str_remove_all, for lettere lesning (hvis feil kommenter tilbake)
 - Produksjon
 - Nøyaktighet og pålitelighet
 - Relevant dokumentasjon
+- Om sesongjustering
 
 "Definisjoner" = def,
 "Administrative opplysninger" = adm,
 "Bakgrunn" = bak,
 "Produksjon" = prod,
 "Feilkilder" = feil,
-"Relevant_dokumentasjon" = reldok
+"Relevant_dokumentasjon" = reldok,
+"Om_sesongjustering" = sesong
            
 ```{r}
 #Creating empty data frame to be able to join each new to this
@@ -51,7 +53,8 @@ df <- data.frame("Statistikk"=character(),
                  "Bakgrunn"=character(),
                  "Produksjon" = character(), 
                  "Feilkilder" = character(), 
-                 "Relevant_dokumentasjon" = character()) 
+                 "Relevant_dokumentasjon" = character(),
+                 "Om_sesongjustering" = character()) 
 
 
 for(i in filnavn){
@@ -117,6 +120,8 @@ df <- rbind(df, ny_statistikk)
 
 ## Telle antall NA per seksjon
 
+Kun hvor hele seksjonen mangler, vi må gå dypere i teksten dersom vi vil finne kun delseksjoner innad hovedseksjonene som har mangler.
+
 ```{r}
 # Antall statistikker per seksjon hvor hele seksjonen mangler
 sum(is.na(df$def)) # 4
@@ -128,10 +133,36 @@ sum(is.na(df$reldok)) # 202
 sum(is.na(df$sesong)) # 265
 ```
 
-- Definisjoner
-- Administrative opplysninger
-- Bakgrunn
-- Produksjon
-- Nøyaktighet og pålitelighet
-- Relevant dokumentasjon
-- Om sesongjustering
+
+## NA i subseksjoner
+
+```{r}
+df$def[1]
+```
+
+## Nynorsk
+
+Nynorske statistikker har en seksjon som heter "definisjonar".
+
+```{r}
+# Alle nynorske statistikker:
+nynorsk <- filter(df, grepl("Definisjonar", def))
+
+nrow(nynorsk) # 46 statistikker
+```
+
+Men: vet at fire statistikker mangler "Definisjoner"-seksjonen totalt. Burde se etter nynorsk i "Bakgrunn"-seksjonen slik at jeg kan sjekke opp mot alle statistikkene.
+
+```{r}
+# UFERDIG
+
+for(i in df){
+  if(grepl("Definisjonar", df[i]$def)){
+    df[i]$nynorsk <- 1
+  }
+  else {
+    df[i]$nynorsk <- 0
+  }
+}
+```
+
