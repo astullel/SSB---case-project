@@ -22,12 +22,11 @@ filnavn <- list.files("./Data/statistikk") # lagre alle filnavnene i en str-list
 filnavn
 ```
 
-<<<<<<< HEAD
 Nå som vi har alle filnavnene i en liste kan vi iterere gjennom disse, dele hver statistikk i seksjoner og lage datasett for hver statistikk.
-=======
+
+
 Nå som vi har alle filnavnene i en liste kan vi iterere gjennom og lese:
 Lager en tabell for hver av om statistikkene med disse oversiktene (disse tabellene burde bli en tabell (+ eventuelt tabell i tabell, slik at det er lettere å lese))
->>>>>>> 4b77cee183c6c67b6bb0de903739df20e2310ac1
 
 -def: definisjoner -- adm: adminisrbak: bakgrunn-
 
@@ -44,6 +43,7 @@ Definisjoner" = def,
            "Produksjon" = prod,
            "Feilkilder" = feil,
            "Relevant_dokumentasjon" = reldok
+           
 ```{r}
 #Creating empty data frame to be able to join each new to this
 df <- data.frame("Statistikk"=character(),
@@ -68,88 +68,40 @@ for(i in filnavn){
     #str_remove_all(pattern = regex("\\r"))
 
   adm <- page %>%
-<<<<<<< HEAD
     html_node('div[id="om-statistikken-administrative_opplysninger"]') %>%
     #MERK! i motsetning til andre steder så skrives undertittelen "administrative opplysninger" med understrek i syntax, IKKE bindestrek! får feilmld om man bruker bindestrek her
     html_text2() %>% 
     # writeLines() %>%
-    str_remove_all(pattern = regex("\\n")) %>% 
-    str_remove_all(pattern = regex("\\r"))
+    # str_remove_all(pattern = regex("\\n")) %>% 
+    # str_remove_all(pattern = regex("\\r"))
 
   bak <- page %>%
     html_node('div[id="om-statistikken-bakgrunn"]') %>%
     html_text2() %>% 
     # writeLines() %>%
-    str_remove_all(pattern = regex("\\n")) %>% 
-    str_remove_all(pattern = regex("\\r"))
+    # str_remove_all(pattern = regex("\\n")) %>% 
+    # str_remove_all(pattern = regex("\\r"))
 
   prod <- page %>%
     html_node('div[id="om-statistikken-produksjon"]') %>%
     html_text2() %>% 
     # writeLines() %>%
-    str_remove_all(pattern = regex("\\n")) %>% 
-    str_remove_all(pattern = regex("\\r"))
+    # str_remove_all(pattern = regex("\\n")) %>% 
+    # str_remove_all(pattern = regex("\\r"))
 
   feil <- page %>%
     html_node('div[id="om-statistikken-feilkilder"]') %>%
     html_text2() %>% 
     # writeLines() %>%
-    str_remove_all(pattern = regex("\\n")) %>% 
-    str_remove_all(pattern = regex("\\r"))
+    # str_remove_all(pattern = regex("\\n")) %>% 
+    # str_remove_all(pattern = regex("\\r"))
 
   reldok <- page %>%
     html_node('div[id="om-statistikken-relevant-dokumentasjon"]') %>%
     html_text2() %>% 
     # writeLines() %>%
-    str_remove_all(pattern = regex("\\n")) %>% 
-    str_remove_all(pattern = regex("\\r"))
-
-  # Her må vi også få inn "Om sesongjustering" når det er fiksa
-  
-  assign(paste0("df_omstat_", i), 
-         data.frame(
-           "Definisjoner" = def,
-           "Administrative_opplysninger" = adm,
-           "Bakgrunn" = bak,
-           "Produksjon" = prod,
-           "Feilkilder" = feil,
-           "Relevant_dokumentasjon" = reldok
-       ))
-=======
-    html_node('div[id="om-statistikken-administrative_opplysninger"]') %>% #MERK! i motsetning til andre steder så skrives undertittelen "administrative opplysninger" med understrek i syntax, IKKE bindestrek! får feilmld om man bruker bindestrek her
-    html_text2() #%>% 
-    # writeLines() %>%
-    #str_remove_all(pattern = regex("\\n")) %>% 
-    #str_remove_all(pattern = regex("\\r"))
-
-  bak <- page %>%
-    html_node('div[id="om-statistikken-bakgrunn"]') %>%
-    html_text2()# %>% 
-    # writeLines() %>%
-    #str_remove_all(pattern = regex("\\n")) %>% 
-    #str_remove_all(pattern = regex("\\r"))
-
-  prod <- page %>%
-    html_node('div[id="om-statistikken-produksjon"]') %>%
-    html_text2() #%>% 
-    # writeLines() %>%
-    #str_remove_all(pattern = regex("\\n")) %>% 
-    #str_remove_all(pattern = regex("\\r"))
-
-  feil <- page %>%
-    html_node('div[id="om-statistikken-feilkilder"]') %>%
-    html_text2() #%>% 
-    # writeLines() %>%
-    #str_remove_all(pattern = regex("\\n")) %>% 
-    #str_remove_all(pattern = regex("\\r"))
-
-  reldok <- page %>%
-    html_node('div[id="om-statistikken-relevant-dokumentasjon"]') %>%
-    html_text2() #%>% 
-    # writeLines() %>%
-    #str_remove_all(pattern = regex("\\n")) %>% 
-    #str_remove_all(pattern = regex("\\r"))
-
+    # str_remove_all(pattern = regex("\\n")) %>% 
+    # str_remove_all(pattern = regex("\\r"))
 
 navn_statistikk <- paste0("df_omstat", i)
 ny_statistikk <- data.frame(navn_statistikk, def, adm, bak, prod, feil, reldok)
@@ -157,6 +109,7 @@ ny_statistikk <- data.frame(navn_statistikk, def, adm, bak, prod, feil, reldok)
 df <- rbind(df, ny_statistikk)
 
 # Her må vi også få inn "Om sesongjustering" når det er fiksa
+
 # Lagrer hver av statistikkene i egne tabeller med navn df_omstat_ + filnavn
 
 #assign(paste0("df_omstat_", i), 
@@ -168,13 +121,11 @@ df <- rbind(df, ny_statistikk)
        #    "Feilkilder" = feil,
         #   "Relevant_dokumentasjon" = reldok
          #))
-
->>>>>>> 4b77cee183c6c67b6bb0de903739df20e2310ac1
 }
 
 ```
 
-# Mangler
+# Ignorer inntil videre
 
 Først endre filnavn-stringen slik at filnavnene matcher de som ligger i R.
 
@@ -217,8 +168,6 @@ sum(is.na(big_data$Feilkilder)) # 6
 sum(is.na(big_data$Relevant_dokumentasjon)) # 202
 ```
 
-<<<<<<< HEAD
-=======
 - Definisjoner
 - Administrative opplysninger
 - Bakgrunn
@@ -232,5 +181,3 @@ Sammenstiller tabellene fra om statistikkene med join
 ```{r}
 
 ```
-
->>>>>>> 4b77cee183c6c67b6bb0de903739df20e2310ac1
