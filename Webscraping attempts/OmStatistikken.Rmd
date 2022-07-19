@@ -91,7 +91,7 @@ for(i in filnavn){
 
   adm <- page %>%
     html_node('div[id="om-statistikken-administrative_opplysninger"]') %>%
-    #MERK! i motsetning til andre steder så skrives undertittelen "administrative opplysninger" med understrek i syntax, IKKE bindestrek! får feilmld om man bruker bindestrek her
+    #MERK! i motsetning til andre steder så skrives undertittelen "administrative opplysninger" med understrek i syntax, IKKE bindestrek! får feilmld om man bruker bindestRrek her
     html_text2() #%>% 
     # writeLines() %>%
     # str_remove_all(pattern = regex("\\n")) %>% 
@@ -154,50 +154,69 @@ sum(is.na(df$reldok)) # 202
 sum(is.na(df$sesong)) # 265
 ```
 
-## Dele opp i sub-seksjoner
-
-```{r}
-# Definisjoner
-test <- df %>%
-  select(navn_statistikk, def) %>% 
-  separate(def,
-           c("def.begrep", "def.klass"),
-           sep = "Standard klassifikasjoner")
-
-# Administrative opplysninger
-admopp <- df %>% 
-  select(navn_statistikk, adm) %>% 
-  separate(adm,
-           c("adm", "adm.ansvarlig_seksjon"),
-           sep = "Ansvarlig seksjon")
-
-df$adm[1]
-```
-
-
 ## Nynorsk
 
-Nynorske statistikker har en seksjon som heter "definisjonar".
+Nynorske statistikker har en underseksjon som heter "lovheimel" i stedet for "lovhjemmel" innenfor Bakgrunn. Bakgrunn er den eneste seksjonen alle statistikkene har.
 
 ```{r}
 # Alle nynorske statistikker:
-nynorsk <- filter(df, grepl("Definisjonar", def))
+nynorsk <- filter(df, grepl("Lovheimel", bak))
 
 nrow(nynorsk) # 46 statistikker
 ```
 
-Men: vet at fire statistikker mangler "Definisjoner"-seksjonen totalt. Burde se etter nynorsk i "Bakgrunn"-seksjonen slik at jeg kan sjekke opp mot alle statistikkene.
+Sorterer nå ut nynorske statistikker fra df:
 
 ```{r}
-# UFERDIG
+df <- df %>% 
+  filter(!grepl("Lovheimel", bak)) # ikke Lovheimel, aka Lovhjemmel.
 
-for(i in df){
-  if(grepl("Definisjonar", df[i]$def)){
-    df[i]$nynorsk <- 1
-  }
-  else {
-    df[i]$nynorsk <- 0
-  }
-}
+nrow(df) # 247 statistikker
+293-46 # 247 - Stemmer
+```
+
+## Dele opp i sub-seksjoner
+
+Deler opp bokmåls-datasettet i subseksjoner. Venter med nynorsk.
+
+```{r}
+# Definisjoner
+definisjoner <- df %>%
+  select(navn_statistikk, def) %>% 
+  separate(def,
+           c("def.begrep", "def.klass"),
+           sep = "Standard klassifikasjoner",
+           # remove = FALSE # Sett dette dersom du vil beholde hele def-variabelen med all teksten
+           )
+
+# Administrative opplysninger
+administrative <- df %>% 
+  select(navn_statistikk, adm) %>% 
+  separate(adm,
+           c("adm.opp", 
+             "adm.oppdat"),
+           sep = "Neste oppdatering") %>% 
+  separate(adm.oppdat,
+           c("adm.oppdat",
+             "adm.seksjon"),
+           sep = "Ansvarlig seksjon") %>% 
+  separate(adm.seksjon,
+           c("adm.seksjon",
+             "adm.region"),
+           sep = "Regionalt nivå") %>% 
+  separate(adm.region,
+           c("adm.region",
+             "adm.hyppig"),
+           sep = "Hyppighet og aktualitet") %>% 
+  separate(adm.hyppig,
+           c("adm.hyppig",
+             "adm.inter"),
+           sep = "Internasjonal rapportering") %>% 
+  separate(adm.inter,
+           c("adm.inter",
+             "adm.lagring"),
+           sep = "Lagring og anvendelse av grunnlagsmaterialet")
+
+
 ```
 
