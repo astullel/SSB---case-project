@@ -154,6 +154,26 @@ sum(is.na(df$reldok)) # 202
 sum(is.na(df$sesong)) # 265
 ```
 
+## Dele opp i sub-seksjoner
+
+```{r}
+# Definisjoner
+test <- df %>%
+  select(navn_statistikk, def) %>% 
+  separate(def,
+           c("def.begrep", "def.klass"),
+           sep = "Standard klassifikasjoner")
+
+# Administrative opplysninger
+admopp <- df %>% 
+  select(navn_statistikk, adm) %>% 
+  separate(adm,
+           c("adm", "adm.ansvarlig_seksjon"),
+           sep = "Ansvarlig seksjon")
+
+df$adm[1]
+```
+
 
 ## Nynorsk
 
