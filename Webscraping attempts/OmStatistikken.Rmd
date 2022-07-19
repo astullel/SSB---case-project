@@ -27,7 +27,6 @@ Nå som vi har alle filnavnene i en liste kan vi iterere gjennom disse, dele hve
 Nå som vi har alle filnavnene i en liste kan vi iterere gjennom og lese:
 Lager en tabell for hver av om statistikkene med disse oversiktene (disse tabellene burde bli en tabell (+ eventuelt tabell i tabell, slik at det er lettere å lese))
 
--def: definisjoner -- adm: adminisrbak: bakgrunn-
 
 Har fjernet str_remove_all, for lettere lesning (hvis feil kommenter tilbake)
 - Definisjoner
@@ -36,12 +35,13 @@ Har fjernet str_remove_all, for lettere lesning (hvis feil kommenter tilbake)
 - Produksjon
 - Nøyaktighet og pålitelighet
 - Relevant dokumentasjon
-Definisjoner" = def,
-           "Administrative opplysninger" = adm,
-           "Bakgrunn" = bak,
-           "Produksjon" = prod,
-           "Feilkilder" = feil,
-           "Relevant_dokumentasjon" = reldok
+
+"Definisjoner" = def,
+"Administrative opplysninger" = adm,
+"Bakgrunn" = bak,
+"Produksjon" = prod,
+"Feilkilder" = feil,
+"Relevant_dokumentasjon" = reldok
            
 ```{r}
 #Creating empty data frame to be able to join each new to this
@@ -110,18 +110,6 @@ navn_statistikk <- i
 ny_statistikk <- data.frame(navn_statistikk, def, adm, bak, prod, feil, reldok, sesong)
 #Using rbind() function to insert above observation in df
 df <- rbind(df, ny_statistikk)
-
-# Lagrer hver av statistikkene i egne tabeller med navn df_omstat_ + filnavn
-
-#assign(paste0("df_omstat_", i), 
- #        data.frame(
-  #         "Definisjoner" = def,
-   #        "Administrative opplysninger" = adm,
-    #       "Bakgrunn" = bak,
-      #    "Produksjon" = prod,
-       #    "Feilkilder" = feil,
-        #   "Relevant_dokumentasjon" = reldok
-         #))
 }
 
 ```
@@ -137,7 +125,7 @@ sum(is.na(df$bak)) # 0
 sum(is.na(df$prod)) # 1
 sum(is.na(df$feil)) # 6
 sum(is.na(df$reldok)) # 202
-sum(is.na(df$sesong))
+sum(is.na(df$sesong)) # 265
 ```
 
 - Definisjoner
@@ -146,10 +134,4 @@ sum(is.na(df$sesong))
 - Produksjon
 - Nøyaktighet og pålitelighet
 - Relevant dokumentasjon
-
-
-Sammenstiller tabellene fra om statistikkene med join
-
-```{r}
-
-```
+- Om sesongjustering
