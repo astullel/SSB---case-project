@@ -63,11 +63,31 @@ for(i in filnavn){
   page <- read_html(x = url, encoding = "UTF-8")
   
   def <- page %>%
-    html_node('div[id="om-statistikken-definisjoner"]') %>%
-    html_text2() #%>% 
+    html_node('div[id="om-statistikken-definisjoner"]') %>% 
+    # html_element('div[class="ssb-nested-accordion"]') %>% 
+    html_text2()
+    # try(html_elements('div[class="ssb-nested-accordion"]')) %>% 
+    # html_text2() # %>% 
     # writeLines() %>%
     #str_remove_all(pattern = regex("\\n")) %>% 
     #str_remove_all(pattern = regex("\\r"))
+  
+  # funksjon <- function(def){
+  #   out <- tryCatch(
+  #     {
+  #       message("This is the try part")
+  #       
+  #       html_elements('div[class="ssb-nested-accordion"]') %>% 
+  #         html_text2()
+  #       },
+  #     error = function(e){
+  #       return(NA)
+  #     }
+  #   )
+  #   return(out)
+  # }
+  # 
+  # def <- funksjon(def)
 
   adm <- page %>%
     html_node('div[id="om-statistikken-administrative_opplysninger"]') %>%
@@ -115,6 +135,7 @@ ny_statistikk <- data.frame(navn_statistikk, def, adm, bak, prod, feil, reldok, 
 df <- rbind(df, ny_statistikk)
 }
 
+df$def[1]
 ```
 
 
@@ -133,12 +154,6 @@ sum(is.na(df$reldok)) # 202
 sum(is.na(df$sesong)) # 265
 ```
 
-
-## NA i subseksjoner
-
-```{r}
-df$def[1]
-```
 
 ## Nynorsk
 
