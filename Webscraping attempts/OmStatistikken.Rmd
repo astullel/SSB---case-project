@@ -134,8 +134,6 @@ ny_statistikk <- data.frame(navn_statistikk, def, adm, bak, prod, feil, reldok, 
 #Using rbind() function to insert above observation in df
 df <- rbind(df, ny_statistikk)
 }
-
-df$def[1]
 ```
 
 
@@ -178,7 +176,10 @@ nrow(df) # 247 statistikker
 ## Dele opp i sub-seksjoner
 
 Deler opp bokmåls-datasettet i subseksjoner. Venter med nynorsk.
-
+Tabell med definisjoner: 
+navn_statistikk 
+def.begrep: definisjoner av viktige begrep og variabler
+def.klass: standard klassifikasjoner
 ```{r}
 # Definisjoner
 definisjoner <- df %>%
@@ -188,16 +189,29 @@ definisjoner <- df %>%
            sep = "Standard klassifikasjoner",
            # remove = FALSE # Sett dette dersom du vil beholde hele def-variabelen med all teksten
            )
+```
 
+Tabell med administrative opplysninger:
+navn_statistikk: navn på statistikken 
+adm.opp: navn og emne
+adm.oppdat: neste oppdatering dato for når neste opppdatering er planlagt
+adm.seksjon: ansvarlig seksjon
+adm.region: regionalt nivå - hvilken region statistikken er for
+adm.hyppighet: hyppighet og aktualitet-  hvor ofte publiseres statistikken 
+adm.inter: internasjonal rapportering
+adm.lagring: lagring og anvendelse av grunnlagsmaterialet
+
+```{r}
 # Administrative opplysninger
+
 administrative <- df %>% 
   select(navn_statistikk, adm) %>% 
   separate(adm,
            c("adm.opp", 
-             "adm.oppdat"),
+             "adm.oppdatering"),
            sep = "Neste oppdatering") %>% 
-  separate(adm.oppdat,
-           c("adm.oppdat",
+  separate(adm.oppdatering,
+           c("adm.oppdatering",
              "adm.seksjon"),
            sep = "Ansvarlig seksjon") %>% 
   separate(adm.seksjon,
@@ -206,10 +220,10 @@ administrative <- df %>%
            sep = "Regionalt nivå") %>% 
   separate(adm.region,
            c("adm.region",
-             "adm.hyppig"),
+             "adm.hyppighet"),
            sep = "Hyppighet og aktualitet") %>% 
-  separate(adm.hyppig,
-           c("adm.hyppig",
+  separate(adm.hyppighet,
+           c("adm.hyppighet",
              "adm.inter"),
            sep = "Internasjonal rapportering") %>% 
   separate(adm.inter,
@@ -218,5 +232,88 @@ administrative <- df %>%
            sep = "Lagring og anvendelse av grunnlagsmaterialet")
 
 
+```
+formaal: formål og historie 
+bruk: brukere og bruksområder
+likbe: likebehandling av brukere
+sammenheng: sammenheng med annen statistikk 
+lov: lovhjemmel
+EEA: EØS-referanse
+```{r}
+#Bakgrunn
+bakgrunn <- df %>% 
+  select(navn_statistikk, bak) %>% 
+  separate(bak,
+           c("bak.formaal", 
+             "bak.bruk"),
+           sep = "Brukere og bruksområder") %>% 
+  separate(bak.bruk,
+           c("bak.bruk",
+             "bak.likbe"),
+           sep = "Likebehandling av brukere") %>% 
+  separate(bak.likbe,
+           c("bak.likbe",
+             "bak.sammenheng"),
+           sep = "Sammenheng med annen statistikk") %>% 
+  separate(bak.sammenheng,
+           c("bak.sammenheng",
+             "bak.lov"),
+           sep = "Lovhjemmel") %>% 
+  separate(bak.lov,
+           c("bak.lov",
+             "bak.EEA"),
+           sep = "EØS-referanse")
+
+```
+ Tabell for produksjon: 
+ 
+ omfang
+ data_kilder: datakilder og utvalg 
+ datainnsamling: datainnsamling, editering og beregninger 
+ sesong: sesongsjustering
+ konf: konfidensialitet 
+ sammenligning: sammenlignbarhet over tid og sted
+```{r}
+#Produksjon
+produksjon <- df %>% 
+  select(navn_statistikk, prod) %>% 
+  separate(prod,
+           c("prod.omfang", 
+             "prod.datakilder"),
+           sep = "Datakilder og utvalg") %>% 
+  separate(prod.datakilder,
+           c("prod.datakilder",
+             "prod.datainnsamling"),
+           sep = "Datakilder og utvalg") %>% 
+  separate(prod.datainnsamling,
+           c("prod.datainnsamling",
+             "prod.sesong"),
+           sep = "Datainnsamling, editering og beregninger") %>% 
+  separate(prod.sesong,
+           c("prod.sesong",
+             "prod.konf"),
+           sep = "Sesongjustering") %>% 
+  separate(prod.konf,
+           c("prod.konf",
+             "prod.sammenligning"),
+           sep = "Konfidensialitet")
+```
+ Tabell med nøyaktighet of pålitelighet 
+ kilde.usikkerhet: feilkilder og usikkerhet
+ revisjon
+```{r}
+#Nøyaktighet og pålitelighet
+feil <- df %>% 
+  select(navn_statistikk, feil) %>% 
+  separate(feil,
+           c("feil.kilde.usikkerhet", 
+             "feil.revisjon"),
+           sep = "Revisjon")
+```
+
+```{r}
+#Relevant dokumentasjon
+reldok <- df %>% 
+  select(navn_statistikk, reldok)
 ```
 
