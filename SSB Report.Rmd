@@ -12,15 +12,20 @@ knitr::opts_chunk$set(echo = TRUE)
 Isssv1337 Political Science Hackathon - Group 1
 
 
-### Quality Report on "About the Statistic"
+# Quality Report on "About the Statistic"
 (10-20 pages)
 
 
 Contents:
 
-Introduction
-Brainstorming
-Data collection
-Data description
-Findings
-Limitations and steps forward
+### Introduction
+
+### Brainstorming
+
+### Data collection
+
+### Data description
+
+### Findings
+
+### Limitations and steps forward
