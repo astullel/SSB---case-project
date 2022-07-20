@@ -1,0 +1,14 @@
+---
+title: "table for seksjoner og tall"
+author: "Christina Lokken"
+date: '2022-07-19'
+output: html_document
+---
+Seksjoner og nummer på seksjonen:
+```{r}
+seksjonsnavn <- c("Seksjon for arbeidsmarkeds- og lønnsstatistikk", "Seksjon for befolkningsstatistikk", "Seksjon for helse-, omsorg- og sosialstatistikk", "Seksjon for inntekts- og levekårsstatistikk", "Seksjon for utdannings- og kulturstatistikk", "Seksjon for nasjonalregnskap", "Seksjon for finansregnskap", "Seksjon for offentlige finanser", "Seksjon for finansmarkedsstatistikk", "Seksjon for utenrikshandelsstatistikk", "Seksjon for internasjonalt utviklingssamarbeid", "Seksjon for prisstatistikk", "Seksjon for næringslivets utvikling", "Seksjon for næringslivets konjunkturer", "Seksjon for næringslivets strukturer", "Seksjon for regnskapsstatistikk og Vof", "Seksjon for energi-, miljø-, og transportstatistikk", "Seksjon for eiendoms-, areal- og primærnæringsstatistikk")
+
+seksjonsnummer <- c(312, 320, 330, 350, 360, 210, 211, 212, 213, 214, 216, 240, 421, 422, 423, 424, 425, 426)
+
+seksjons_df <- data.frame(seksjonsnavn, seksjonsnummer)
+```
