@@ -162,10 +162,11 @@ Link: https://www.ssb.no/inntekt-og-forbruk/inntekt-og-formue/statistikk/inntekt
 ```{r}
 rm(list = ls())
 
-url <- paste0("https://www.ssb.no/inntekt-og-forbruk/inntekt-og-formue/statistikk/inntekter-personlig-naeringsdrivende")
+# TESTER
+url <- paste0("https://www.ssb.no/arbeid-og-lonn/sysselsetting/statistikk/arbeidskraftundersokelsen")
 
 # Husk å endre til deres egen path:
-filename <- paste0("../Data/Inntekter_personlig_naeringsdrivende.html")
+filename <- paste0("./Data/arbeidskraftundersokelsen.html")
 
 download_html(
   url = url,
@@ -178,9 +179,10 @@ page <- read_html(x = filename, encoding = "UTF-8")
 
 noder <- page %>%
   html_nodes('div[id^="om-statistikken"]') %>% # må jeg bruke html_nodes() etterhvert når jeg skal trekke ut flere?
-  html_text2() %>% 
-  str_remove_all(pattern = regex("\\n")) %>% 
-  str_remove_all(pattern = regex("\\r"))
+  html_text2() # %>% 
+  # writeLines()
+  # str_remove_all(pattern = regex("\\n")) %>% 
+  # str_remove_all(pattern = regex("\\r"))
 ```
 
 Problemer:
@@ -206,6 +208,9 @@ bakgrunn <- noder[3]
 produksjon <- noder[4]
 noyaktighet_paalitelighet <- noder[5]
 relevant_dok <- noder[6]
+sesongjustering <- noder[7]
+
+sesongjustering
 ```
 
 Trenger å splitte stringen i flere deler:

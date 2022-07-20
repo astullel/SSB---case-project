@@ -19,83 +19,274 @@ getwd() # sjekker path/working directory
 # Pathen til statistikkene er "./Data/statistikk
 
 filnavn <- list.files("./Data/statistikk") # lagre alle filnavnene i en str-liste
-
 ```
+
+Nå som vi har alle filnavnene i en liste kan vi iterere gjennom disse, dele hver statistikk i seksjoner og lage datasett for hver statistikk.
+
 
 Nå som vi har alle filnavnene i en liste kan vi iterere gjennom og lese:
+Lager en tabell for hver av om statistikkene med disse oversiktene (disse tabellene burde bli en tabell (+ eventuelt tabell i tabell, slik at det er lettere å lese))
 
-```{r}
-for(i in filnavn){
-  url <- paste0("./Data/statistikk/", i)
 
-  page <- read_html(x = url, encoding = "UTF-8")
-  
-  def <- page %>%
-  html_node('div[id="om-statistikken-definisjoner"]') %>%
-  html_text2() %>% 
-  # writeLines() %>%
-  str_remove_all(pattern = regex("\\n")) %>% 
-  str_remove_all(pattern = regex("\\r"))
-
-adm <- page %>%
-  html_node('div[id="om-statistikken-administrative_opplysninger"]') %>% #MERK! i motsetning til andre steder så skrives undertittelen "administrative opplysninger" med understrek i syntax, IKKE bindestrek! får feilmld om man bruker bindestrek her
-  html_text2() %>% 
-  # writeLines() %>%
-  str_remove_all(pattern = regex("\\n")) %>% 
-  str_remove_all(pattern = regex("\\r"))
-
-bak <- page %>%
-  html_node('div[id="om-statistikken-bakgrunn"]') %>%
-  html_text2() %>% 
-  # writeLines() %>%
-  str_remove_all(pattern = regex("\\n")) %>% 
-  str_remove_all(pattern = regex("\\r"))
-
-prod <- page %>%
-  html_node('div[id="om-statistikken-produksjon"]') %>%
-  html_text2() %>% 
-  # writeLines() %>%
-  str_remove_all(pattern = regex("\\n")) %>% 
-  str_remove_all(pattern = regex("\\r"))
-
-feil <- page %>%
-  html_node('div[id="om-statistikken-feilkilder"]') %>%
-  html_text2() %>% 
-  # writeLines() %>%
-  str_remove_all(pattern = regex("\\n")) %>% 
-  str_remove_all(pattern = regex("\\r"))
-
-reldok <- page %>%
-  html_node('div[id="om-statistikken-relevant-dokumentasjon"]') %>%
-  html_text2() %>% 
-  # writeLines() %>%
-  str_remove_all(pattern = regex("\\n")) %>% 
-  str_remove_all(pattern = regex("\\r"))
-
-# Her må vi også få inn "Om sesongjustering" når det er fiksa
-  
-assign(paste0("df_omstat_", i), 
-       data.frame(
-         "Definisjoner" = def,
-         "Administrative opplysninger" = adm,
-         "Bakgrunn" = bak,
-         "Produksjon" = prod,
-         "Feilkilder" = feil,
-         "Relevant_dokumentasjon" = reldok
-       ))
-}
-
-```
-
-# Dele opp i seksjoner
-
-(( IKKE FERDIG ))
-
-Jeg ser at hvert objekt er  en chr-string [1:6] (evt. mindre ettersom de har færre "seksjoner" under Om statistikken) og vet at "Om statistikken" bør ha følgende seks seksjoner:
-
+Har fjernet str_remove_all, for lettere lesning (hvis feil kommenter tilbake)
 - Definisjoner
 - Administrative opplysninger
 - Bakgrunn
 - Produksjon
 - Nøyaktighet og pålitelighet
 - Relevant dokumentasjon
+- Om sesongjustering
+
+"Definisjoner" = def,
+"Administrative opplysninger" = adm,
+"Bakgrunn" = bak,
+"Produksjon" = prod,
+"Feilkilder" = feil,
+"Relevant_dokumentasjon" = reldok,
+"Om_sesongjustering" = sesong
+           
+```{r}
+#Creating empty data frame to be able to join each new to this
+df <- data.frame("Statistikk"=character(),
+                 "Definisjoner"=character(), 
+                 "Administrative opplysninger"= character(), 
+                 "Bakgrunn"=character(),
+                 "Produksjon" = character(), 
+                 "Feilkilder" = character(), 
+                 "Relevant_dokumentasjon" = character(),
+                 "Om_sesongjustering" = character()) 
+
+
+for(i in filnavn){
+  url <- paste0("./Data/statistikk/", i)
+
+  page <- read_html(x = url, encoding = "UTF-8")
+  
+  def <- page %>%
+    html_node('div[id="om-statistikken-definisjoner"]')%>% html_text2()
+
+  adm <- page %>%
+    html_node('div[id="om-statistikken-administrative_opplysninger"]') %>%
+    #MERK! i motsetning til andre steder så skrives undertittelen "administrative opplysninger" med understrek i syntax, IKKE bindestrek! får feilmld om man bruker bindestrek her
+    html_text2()
+
+  bak <- page %>%
+    html_node('div[id="om-statistikken-bakgrunn"]') %>%
+    html_text2() 
+  
+  prod <- page %>%
+    html_node('div[id="om-statistikken-produksjon"]') %>%
+    html_text2() 
+
+  feil <- page %>%
+    html_node('div[id="om-statistikken-feilkilder"]') %>%
+    html_text2() 
+
+  reldok <- page %>%
+    html_node('div[id="om-statistikken-relevant-dokumentasjon"]') %>%
+    html_text2() 
+  
+  sesong <- page %>% 
+    html_node('div[id="om-sesongjustering"]') %>% 
+    html_text2()
+
+navn_statistikk <- i
+ny_statistikk <- data.frame(navn_statistikk, def, adm, bak, prod, feil, reldok, sesong)
+#Using rbind() function to insert above observation in df
+df <- rbind(df, ny_statistikk)
+}
+#Lage id til statistikk_navn for lettere søking (navnene er kleine)
+df <- mutate(id=rownames(df), df)
+```
+
+
+## Telle antall NA per seksjon
+
+Kun hvor hele seksjonen mangler, vi må gå dypere i teksten dersom vi vil finne kun delseksjoner innad hovedseksjonene som har mangler.
+
+```{r}
+# Antall statistikker per seksjon hvor hele seksjonen mangler
+sum(is.na(df$def)) # 4
+sum(is.na(df$adm)) # 1
+sum(is.na(df$bak)) # 0
+sum(is.na(df$prod)) # 1
+sum(is.na(df$feil)) # 6
+sum(is.na(df$reldok)) # 202
+sum(is.na(df$sesong)) # 265
+```
+
+## Nynorsk
+
+Nynorske statistikker har en underseksjon som heter "lovheimel" i stedet for "lovhjemmel" innenfor Bakgrunn. Bakgrunn er den eneste seksjonen alle statistikkene har.
+
+```{r}
+# Alle nynorske statistikker:
+nynorsk <- filter(df, grepl("Lovheimel", bak))
+
+nrow(nynorsk) # 46 statistikker
+```
+
+Sorterer nå ut nynorske statistikker fra df:
+
+```{r}
+df <- df %>% 
+  filter(!grepl("Lovheimel", bak)) # ikke Lovheimel, aka Lovhjemmel.
+
+nrow(df) # 247 statistikker
+293-46 # 247 - Stemmer
+```
+
+## Dele opp i sub-seksjoner
+
+Deler opp bokmåls-datasettet i subseksjoner. Venter med nynorsk.
+Tabell med definisjoner: 
+navn_statistikk 
+def.begrep: definisjoner av viktige begrep og variabler
+def.klass: standard klassifikasjoner
+```{r}
+# Definisjoner
+definisjoner <- df %>%
+  select(navn_statistikk, def) %>% 
+  separate(def,
+           c("def.begrep", "def.klass"),
+           sep = "Standard klassifikasjoner",
+           # remove = FALSE # Sett dette dersom du vil beholde hele def-variabelen med all teksten
+           )
+```
+
+Tabell med administrative opplysninger:
+navn_statistikk: navn på statistikken 
+adm.opp: navn og emne
+adm.oppdat: neste oppdatering dato for når neste opppdatering er planlagt
+adm.seksjon: ansvarlig seksjon
+adm.region: regionalt nivå - hvilken region statistikken er for
+adm.hyppighet: hyppighet og aktualitet-  hvor ofte publiseres statistikken 
+adm.inter: internasjonal rapportering
+adm.lagring: lagring og anvendelse av grunnlagsmaterialet
+
+```{r}
+# Administrative opplysninger
+
+administrative <- df %>% 
+  select(navn_statistikk, adm) %>% 
+  separate(adm,
+           c("adm.opp", 
+             "adm.oppdatering"),
+           sep = "Neste oppdatering") %>% 
+  separate(adm.oppdatering,
+           c("adm.oppdatering",
+             "adm.seksjon"),
+           sep = "Ansvarlig seksjon") %>% 
+  separate(adm.seksjon,
+           c("adm.seksjon",
+             "adm.region"),
+           sep = "Regionalt nivå") %>% 
+  separate(adm.region,
+           c("adm.region",
+             "adm.hyppighet"),
+           sep = "Hyppighet og aktualitet") %>% 
+  separate(adm.hyppighet,
+           c("adm.hyppighet",
+             "adm.inter"),
+           sep = "Internasjonal rapportering") %>% 
+  separate(adm.inter,
+           c("adm.inter",
+             "adm.lagring"),
+           sep = "Lagring og anvendelse av grunnlagsmaterialet")
+
+
+```
+formaal: formål og historie 
+bruk: brukere og bruksområder
+likbe: likebehandling av brukere
+sammenheng: sammenheng med annen statistikk 
+lov: lovhjemmel
+EEA: EØS-referanse
+```{r}
+#Bakgrunn
+bakgrunn <- df %>% 
+  select(navn_statistikk, bak) %>% 
+  separate(bak,
+           c("bak.formaal", 
+             "bak.bruk"),
+           sep = "Brukere og bruksområder") %>% 
+  separate(bak.bruk,
+           c("bak.bruk",
+             "bak.likbe"),
+           sep = "Likebehandling av brukere") %>% 
+  separate(bak.likbe,
+           c("bak.likbe",
+             "bak.sammenheng"),
+           sep = "Sammenheng med annen statistikk") %>% 
+  separate(bak.sammenheng,
+           c("bak.sammenheng",
+             "bak.lov"),
+           sep = "Lovhjemmel") %>% 
+  separate(bak.lov,
+           c("bak.lov",
+             "bak.EEA"),
+           sep = "EØS-referanse")
+
+```
+ Tabell for produksjon: 
+ 
+ omfang
+ data_kilder: datakilder og utvalg 
+ datainnsamling: datainnsamling, editering og beregninger 
+ sesong: sesongsjustering
+ konf: konfidensialitet 
+ sammenligning: sammenlignbarhet over tid og sted
+```{r}
+#Produksjon
+produksjon <- df %>% 
+  select(navn_statistikk, prod) %>% 
+  separate(prod,
+           c("prod.omfang", 
+             "prod.datakilder"),
+           sep = "Datakilder og utvalg") %>% 
+  separate(prod.datakilder,
+           c("prod.datakilder",
+             "prod.datainnsamling"),
+           sep = "Datainnsamling, editering og beregninger") %>% 
+  separate(prod.datainnsamling,
+           c("prod.datainnsamling",
+             "prod.sesong"),
+           sep = "Sesongjustering") %>% 
+  separate(prod.sesong,
+           c("prod.sesong",
+             "prod.konf"),
+           sep = "Konfidensialitet") %>% 
+  separate(prod.konf,
+           c("prod.konf",
+             "prod.sammenligning"),
+           sep = "Sammenlignbarhet over tid og sted")
+```
+ Tabell med nøyaktighet of pålitelighet 
+ kilde.usikkerhet: feilkilder og usikkerhet
+ revisjon
+```{r}
+#Nøyaktighet og pålitelighet
+feil <- df %>% 
+  select(navn_statistikk, feil) %>% 
+  separate(feil,
+           c("feil.kilde.usikkerhet", 
+             "feil.revisjon"),
+           sep = "Revisjon")
+```
+
+```{r}
+#Relevant dokumentasjon
+reldok <- df %>% 
+  select(navn_statistikk, reldok)
+```
+
+Fordi det som alltid må brukes for å sjekke NA, definisjoener, dokumentasjon osv. er hvilken seksjon som er ansvarlig lager egen tabell med for dette
+```{r}
+#ansvarlig seksjon
+seksjon <- administrative %>% 
+  select(navn_statistikk, adm.seksjon)
+```
+
+Når vi nå vil sjekke de forskjellige opplysningene opp mot seksjon, bruker vi diverse joins. (nytt dokument?)
+
+
