@@ -95,7 +95,7 @@ ny_statistikk <- data.frame(navn_statistikk, def, adm, bak, prod, feil, reldok, 
 #Using rbind() function to insert above observation in df
 df <- rbind(df, ny_statistikk)
 }
-#Lage id til statistikk_navn for lettere søking (navnene er kleine)
+# Lage id til statistikk_navn for lettere søking (navnene er kleine)
 df <- mutate(id=rownames(df), df)
 ```
 
@@ -139,14 +139,16 @@ nrow(df) # 247 statistikker
 ## Dele opp i sub-seksjoner
 
 Deler opp bokmåls-datasettet i subseksjoner. Venter med nynorsk.
+
 Tabell med definisjoner: 
-navn_statistikk 
+id: id
+navn_statistikk: navn på statistikken 
 def.begrep: definisjoner av viktige begrep og variabler
 def.klass: standard klassifikasjoner
 ```{r}
 # Definisjoner
 definisjoner <- df %>%
-  select(navn_statistikk, def) %>% 
+  select(id, navn_statistikk, def) %>% 
   separate(def,
            c("def.begrep", "def.klass"),
            sep = "Standard klassifikasjoner",
@@ -155,6 +157,7 @@ definisjoner <- df %>%
 ```
 
 Tabell med administrative opplysninger:
+id: id
 navn_statistikk: navn på statistikken 
 adm.opp: navn og emne
 adm.oppdat: neste oppdatering dato for når neste opppdatering er planlagt
@@ -168,7 +171,7 @@ adm.lagring: lagring og anvendelse av grunnlagsmaterialet
 # Administrative opplysninger
 
 administrative <- df %>% 
-  select(navn_statistikk, adm) %>% 
+  select(id, navn_statistikk, adm) %>% 
   separate(adm,
            c("adm.opp", 
              "adm.oppdatering"),
@@ -196,16 +199,22 @@ administrative <- df %>%
 
 
 ```
+
+Tabell med bakgrunnsopplysninger:
+id: id
+navn_statistikk: navn på statistikken
 formaal: formål og historie 
 bruk: brukere og bruksområder
 likbe: likebehandling av brukere
 sammenheng: sammenheng med annen statistikk 
 lov: lovhjemmel
 EEA: EØS-referanse
+
 ```{r}
 #Bakgrunn
+
 bakgrunn <- df %>% 
-  select(navn_statistikk, bak) %>% 
+  select(id, navn_statistikk, bak) %>% 
   separate(bak,
            c("bak.formaal", 
              "bak.bruk"),
@@ -228,18 +237,20 @@ bakgrunn <- df %>%
            sep = "EØS-referanse")
 
 ```
- Tabell for produksjon: 
- 
- omfang
- data_kilder: datakilder og utvalg 
- datainnsamling: datainnsamling, editering og beregninger 
- sesong: sesongsjustering
- konf: konfidensialitet 
- sammenligning: sammenlignbarhet over tid og sted
+
+Tabell for produksjon: 
+id: id
+navn_statistikk
+prod.omfang: omfang
+prod.datakilder: datakilder og utvalg 
+prod.datainnsamling: datainnsamling, editering og beregninger 
+prod.sesong: sesongsjustering
+prod.konf: konfidensialitet 
+prod.sammenligning: sammenlignbarhet over tid og sted
 ```{r}
 #Produksjon
 produksjon <- df %>% 
-  select(navn_statistikk, prod) %>% 
+  select(id, navn_statistikk, prod) %>% 
   separate(prod,
            c("prod.omfang", 
              "prod.datakilder"),
@@ -261,26 +272,91 @@ produksjon <- df %>%
              "prod.sammenligning"),
            sep = "Sammenlignbarhet over tid og sted")
 ```
- Tabell med nøyaktighet of pålitelighet 
- kilde.usikkerhet: feilkilder og usikkerhet
- revisjon
+
+Tabell med nøyaktighet of pålitelighet: 
+id: id
+navn_statistikk: navn på statistikken
+feil.kilde.usikkerhet: feilkilder og usikkerhet
+feil.revisjon: revisjon
 ```{r}
 #Nøyaktighet og pålitelighet
 feil <- df %>% 
-  select(navn_statistikk, feil) %>% 
+  select(id, navn_statistikk, feil) %>% 
   separate(feil,
            c("feil.kilde.usikkerhet", 
              "feil.revisjon"),
            sep = "Revisjon")
 ```
 
+Relevant dokumentasjon består kun av linker, ingen sub-seksjoner.
+
 ```{r}
 #Relevant dokumentasjon
 reldok <- df %>% 
-  select(navn_statistikk, reldok)
+  select(id, navn_statistikk, reldok)
 ```
 
-Fordi det som alltid må brukes for å sjekke NA, definisjoener, dokumentasjon osv. er hvilken seksjon som er ansvarlig lager egen tabell med for dette
+Tabell med om sesongjustering:
+id: id
+navn_statistikk: navnet på statistikken
+sesong.generelt: Generelt om sesongjustering
+sesong.hvorfor: Hvorfor sesongjusteres denne statistikken?
+sesong.prekorr: Prekorrigering
+sesong.sesongjust: Sesongjustering
+sesong.revisjon: Revisjonsrutiner
+sesong.kvalitet: Kvalitet på sesongjustering
+sesong.spesielle: Spesielle tilfeller
+sesong.publisering: Publiseringsrutiner
+sesong.relevant: Relevant dokumentasjon
+
+```{r}
+# Om sesongjustering
+sesongjust <- df %>% 
+  select(navn_statistikk, sesong) %>% 
+  separate(sesong,
+           c("sesong.generelt",
+             "sesong.hvorfor",
+             "sesong.prekorr",
+             "sesong.sesongjust",
+             "sesong.revisjon",
+             "sesong.kvalitet",
+             "sesong.spesielle",
+             "sesong.publisering",
+             "sesong.relevant"),
+           sep = "\n\n\r\r\n") #%>% # Dennne koden fungerer for de fleste, men ikke for alle - noen koder har "Ikke relevant" og vil da ikke gå videre.
+  # separate(sesong.hvorfor,
+  #          c("sesong.hvorfor",
+  #            "sesong.prekorr"),
+  #          sep = "\n\n\r\r\n") %>% # Møter på problemer her, se sesongjust[12]
+  # separate(sesong.prekorr,
+  #          c("sesong.prekorr",
+  #            "sesong.sesongjust"),
+  #          sep = "Valg av sesongjusteringsmetode") %>% 
+  # separate(sesong.sesongjust,
+  #          c("sesong.sesongjust",
+  #            "sesong.revisjon"),
+  #          sep = "Revisjonsrutiner i bruk") %>% 
+  # separate(sesong.revisjon,
+  #          c("sesong.revisjon",
+  #            "sesong.kvalitet"),
+  #          sep = "Kvalitet på sesongjustering") %>% 
+  # separate(sesong.kvalitet,
+  #          c("sesong.kvalitet",
+  #            "sesong.spesielle"),
+  #          sep = "Spesielle tilfeller") %>% 
+  # separate(sesong.spesielle,
+  #          c("sesong.spesielle",
+  #            "sesong.publisering"),
+  #          sep = "Publiseringsrutiner") %>% 
+  # separate(sesong.publisering,
+  #          c("sesong.publisering",
+  #            "sesong.relevant"),
+  #          sep = "Relevant dokumentasjon")
+```
+
+
+Fordi det som alltid må brukes for å sjekke NA, definisjoner, dokumentasjon osv. er hvilken seksjon som er ansvarlig lager egen tabell med for dette
+
 ```{r}
 #ansvarlig seksjon
 seksjon <- administrative %>% 
