@@ -271,6 +271,18 @@ produksjon <- df %>%
            c("prod.konf",
              "prod.sammenligning"),
            sep = "Sammenlignbarhet over tid og sted")
+
+# Undersøker hvorfor det kommer NA noen steder hvor det bør være tekst.
+test <- df %>% 
+  select(id, navn_statistikk, prod) %>% 
+  separate(prod,
+           c("prod.omfang", 
+             "prod.datakilder",
+             "prod.datainnsamling",
+             "prod.sesong",
+             "prod.konf",
+             "prod.sammenligning"),
+           sep = "\n\n\r\r\n")
 ```
 
 Tabell med nøyaktighet of pålitelighet: 
