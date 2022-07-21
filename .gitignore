@@ -26,3 +26,5 @@ vignettes/*.pdf
 *.knit.md
 # R Environment Variables
 .Renviron
+Data som trengs2.Rmd -> Disposisjon.Rmd
+Disposisjon.Rmd

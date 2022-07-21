@@ -34,20 +34,17 @@ knitr::opts_chunk$set(echo = TRUE)
 
 -   En oversikt over statistikker som refererer til Klass5 (<https://www.ssb.no/klass/>).
     -   Prosentvis overordnet og under hver seksjon
--   Hvilke/hvor mange gir "uncertainty estimates"    
+-   Hvilke/hvor mange gir "uncertainty estimates"  
+-   Hvor mye tekst som blir fylt ut av de ulike seksjonene (antall ord)
+
+
 
 
 ### Eventuelt:
 
 -   Forskjell på språk (bokmål, nynorsk og engelsk)
--   Forskjellen på "ikke relevant" og ikke fylt ut.
+-   Forskjellen på "ikke relevant" og ikke fylt ut. Noen bruker "ingen"?
 -   Bruke internet archive til å se på dato for publisering a statistikk og av "om statistikken"
 -   Hvilke metoder blir brukt i forskjellige seksjoner (feks sesongjustering).
-
-```{r}
-getwd()
-setwd("C:/Users/tyrag/OneDrive - Universitetet i Oslo/ISSSV1337/SSB---case-project")
-getwd()
-```
 
 
