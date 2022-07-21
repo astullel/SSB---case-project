@@ -45,7 +45,7 @@ Har fjernet str_remove_all, for lettere lesning (hvis feil kommenter tilbake)
 "Relevant_dokumentasjon" = reldok,
 "Om_sesongjustering" = sesong
            
-```{r}
+```{r, eval=FALSE}
 #Creating empty data frame to be able to join each new to this
 df <- data.frame("Statistikk"=character(),
                  "Definisjoner"=character(), 
@@ -63,32 +63,82 @@ for(i in filnavn){
   page <- read_html(x = url, encoding = "UTF-8")
   
   def <- page %>%
-    html_node('div[id="om-statistikken-definisjoner"]')%>% html_text2()
+    html_node('div[id="om-statistikken-definisjoner"]')%>% 
+    html_elements('div[class="ssb-nested-accordion"]') %>% 
+    html_node('div[class="nested-accordion-body closed"]') %>% 
+    html_text2()
+  
+  def <- data.frame(def[1], def[2])
 
   adm <- page %>%
     html_node('div[id="om-statistikken-administrative_opplysninger"]') %>%
     #MERK! i motsetning til andre steder så skrives undertittelen "administrative opplysninger" med understrek i syntax, IKKE bindestrek! får feilmld om man bruker bindestrek her
+    html_elements('div[class="ssb-nested-accordion"]') %>% 
+    html_node('div[class="nested-accordion-body closed"]') %>% 
     html_text2()
-
+  
+  adm <- data.frame(adm[1],
+                    adm[2],
+                    adm[3],
+                    adm[4],
+                    adm[5],
+                    adm[6],
+                    adm[7])
   bak <- page %>%
     html_node('div[id="om-statistikken-bakgrunn"]') %>%
+    html_elements('div[class="ssb-nested-accordion"]') %>% 
+    html_node('div[class="nested-accordion-body closed"]') %>% 
     html_text2() 
+  
+  bak <- data.frame(bak[1],
+                    bak[2],
+                    bak[3],
+                    bak[4],
+                    bak[5],
+                    bak[6])
   
   prod <- page %>%
     html_node('div[id="om-statistikken-produksjon"]') %>%
+    html_elements('div[class="ssb-nested-accordion"]') %>% 
+    html_node('div[class="nested-accordion-body closed"]') %>%
     html_text2() 
+  
+  prod <- data.frame(prod[1],
+                     prod[2],
+                     prod[3],
+                     prod[4],
+                     prod[5],
+                     prod[6])
 
   feil <- page %>%
     html_node('div[id="om-statistikken-feilkilder"]') %>%
+    html_elements('div[class="ssb-nested-accordion"]') %>% 
+    html_node('div[class="nested-accordion-body closed"]') %>% 
     html_text2() 
+  
+  feil <- data.frame(feil[1],
+                     feil[2])
 
   reldok <- page %>%
     html_node('div[id="om-statistikken-relevant-dokumentasjon"]') %>%
     html_text2() 
+  # Vi vet at output under Relevant dokumentasjon er linker, men de er ikke linker i datasettet vårt ettersom det ikke var nødvendig for vårt prosjekt.
   
   sesong <- page %>% 
-    html_node('div[id="om-sesongjustering"]') %>% 
+    html_node('div[id="om-sesongjustering"]') %>%   
+    html_elements('div[class="ssb-nested-accordion"]') %>% 
+    html_node('div[class="nested-accordion-body closed"]') %>% 
     html_text2()
+  
+  sesong <- data.frame(sesong[1],
+                       sesong[2],
+                       sesong[3],
+                       sesong[4],
+                       sesong[5],
+                       sesong[6],
+                       sesong[7],
+                       sesong[8],
+                       sesong[9])
 
 navn_statistikk <- i
 ny_statistikk <- data.frame(navn_statistikk, def, adm, bak, prod, feil, reldok, sesong)
@@ -97,6 +147,20 @@ df <- rbind(df, ny_statistikk)
 }
 # Lage id til statistikk_navn for lettere søking (navnene er kleine)
 df <- mutate(id=rownames(df), df)
+```
+
+## Lagrer df lokalt
+
+```{r, eval=FALSE}
+# Save df locally as "om_statistikken"
+saveRDS(df, file = "./Data/om_statistikken")
+```
+
+## Leser inn filen til R
+
+```{r}
+# Read the file into R
+df <- readRDS("./Data/om_statistikken")
 ```
 
 
