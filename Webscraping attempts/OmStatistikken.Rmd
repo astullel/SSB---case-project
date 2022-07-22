@@ -139,9 +139,15 @@ for(i in filnavn){
                        sesong[7],
                        sesong[8],
                        sesong[9])
+  
+  nynorsk <- page %>% 
+    html_node('div[id="om-statistikken-bakgrunn"]') %>% # Bruker bakgrunn siden alle statistikkene har denne delen
+    html_text2()
+    
+  nynorsk <- grepl("Lovheimel", nynorsk, fixed=TRUE) # Søker etter "Lovheimel" i bakgrunns-seksjonen
 
 navn_statistikk <- i
-ny_statistikk <- data.frame(navn_statistikk, def, adm, bak, prod, feil, reldok, sesong)
+ny_statistikk <- data.frame(navn_statistikk, def, adm, bak, prod, feil, reldok, sesong, nynorsk)
 #Using rbind() function to insert above observation in df
 df <- rbind(df, ny_statistikk)
 }
@@ -170,13 +176,13 @@ Kun hvor hele seksjonen mangler, vi må gå dypere i teksten dersom vi vil finne
 
 ```{r}
 # Antall statistikker per seksjon hvor hele seksjonen mangler
-sum(is.na(df$def)) # 4
-sum(is.na(df$adm)) # 1
-sum(is.na(df$bak)) # 0
-sum(is.na(df$prod)) # 1
-sum(is.na(df$feil)) # 6
+sum(is.na(df$def.1.)) # 4
+sum(is.na(df$adm.1.)) # 1
+sum(is.na(df$bak.1.)) # 0
+sum(is.na(df$prod.1.)) # 1
+sum(is.na(df$feil.1.)) # 6
 sum(is.na(df$reldok)) # 202
-sum(is.na(df$sesong)) # 265
+sum(is.na(df$sesong.1.)) # 265
 ```
 
 ## Nynorsk
@@ -185,19 +191,21 @@ Nynorske statistikker har en underseksjon som heter "lovheimel" i stedet for "lo
 
 ```{r}
 # Alle nynorske statistikker:
-nynorsk <- filter(df, grepl("Lovheimel", bak))
-
-nrow(nynorsk) # 46 statistikker
+nrow(df$nynorsk==TRUE) # 46 statistikker
 ```
 
 Sorterer nå ut nynorske statistikker fra df:
 
 ```{r}
-df <- df %>% 
-  filter(!grepl("Lovheimel", bak)) # ikke Lovheimel, aka Lovhjemmel.
+nynorsk <- df %>% 
+  filter(nynorsk == TRUE) # trekke ut kun nynorske statistikker
 
-nrow(df) # 247 statistikker
-293-46 # 247 - Stemmer
+bokmål <- df %>% 
+  filter(nynorsk == FALSE) # fjerne nynorsk fra df for rent bokmål-datasett
+
+nrow(nynorsk) # 46 statistikker
+nrow(bokmål) # 247 statistikker
+247+46 # Blir 293 slik som totale df, riktig
 ```
 
 ## Dele opp i sub-seksjoner
