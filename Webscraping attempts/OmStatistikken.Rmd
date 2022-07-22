@@ -189,22 +189,17 @@ sum(is.na(df$sesong.1.)) # 265
 
 Nynorske statistikker har en underseksjon som heter "lovheimel" i stedet for "lovhjemmel" innenfor Bakgrunn. Bakgrunn er den eneste seksjonen alle statistikkene har.
 
-```{r}
-# Alle nynorske statistikker:
-nrow(df$nynorsk==TRUE) # 46 statistikker
-```
-
 Sorterer nå ut nynorske statistikker fra df:
 
 ```{r}
 nynorsk <- df %>% 
   filter(nynorsk == TRUE) # trekke ut kun nynorske statistikker
 
-bokmål <- df %>% 
+bokmaal <- df %>% 
   filter(nynorsk == FALSE) # fjerne nynorsk fra df for rent bokmål-datasett
 
 nrow(nynorsk) # 46 statistikker
-nrow(bokmål) # 247 statistikker
+nrow(bokmaal) # 247 statistikker
 247+46 # Blir 293 slik som totale df, riktig
 ```
 
@@ -219,13 +214,10 @@ def.begrep: definisjoner av viktige begrep og variabler
 def.klass: standard klassifikasjoner
 ```{r}
 # Definisjoner
-definisjoner <- df %>%
-  select(id, navn_statistikk, def) %>% 
-  separate(def,
-           c("def.begrep", "def.klass"),
-           sep = "Standard klassifikasjoner",
-           # remove = FALSE # Sett dette dersom du vil beholde hele def-variabelen med all teksten
-           )
+definisjoner <- bokmaal %>%
+  select(id, navn_statistikk, def.1., def.2.) %>% # Legger id først
+  rename("def.begrep" = def.1., # nye mer forståelige navn på variablene
+         "def.klass" = def.2.)
 ```
 
 Tabell med administrative opplysninger:
@@ -242,33 +234,18 @@ adm.lagring: lagring og anvendelse av grunnlagsmaterialet
 ```{r}
 # Administrative opplysninger
 
-administrative <- df %>% 
-  select(id, navn_statistikk, adm) %>% 
-  separate(adm,
-           c("adm.opp", 
-             "adm.oppdatering"),
-           sep = "Neste oppdatering") %>% 
-  separate(adm.oppdatering,
-           c("adm.oppdatering",
-             "adm.seksjon"),
-           sep = "Ansvarlig seksjon") %>% 
-  separate(adm.seksjon,
-           c("adm.seksjon",
-             "adm.region"),
-           sep = "Regionalt nivå") %>% 
-  separate(adm.region,
-           c("adm.region",
-             "adm.hyppighet"),
-           sep = "Hyppighet og aktualitet") %>% 
-  separate(adm.hyppighet,
-           c("adm.hyppighet",
-             "adm.inter"),
-           sep = "Internasjonal rapportering") %>% 
-  separate(adm.inter,
-           c("adm.inter",
-             "adm.lagring"),
-           sep = "Lagring og anvendelse av grunnlagsmaterialet")
-
+administrative <- bokmaal %>% 
+  select(id, navn_statistikk, 
+         adm.1., adm.2., adm.3., 
+         adm.4., adm.5., adm.6., 
+         adm.7.) %>% 
+  rename("adm.opp" = adm.1.,
+         "adm.oppdat" = adm.2.,
+         "adm.seksjon" = adm.3.,
+         "adm.region" = adm.4.,
+         "adm.hyppighet" = adm.5.,
+         "adm.inter" = adm.6.,
+         "adm.lagring" = adm.7.)
 
 ```
 
@@ -285,28 +262,15 @@ EEA: EØS-referanse
 ```{r}
 #Bakgrunn
 
-bakgrunn <- df %>% 
-  select(id, navn_statistikk, bak) %>% 
-  separate(bak,
-           c("bak.formaal", 
-             "bak.bruk"),
-           sep = "Brukere og bruksområder") %>% 
-  separate(bak.bruk,
-           c("bak.bruk",
-             "bak.likbe"),
-           sep = "Likebehandling av brukere") %>% 
-  separate(bak.likbe,
-           c("bak.likbe",
-             "bak.sammenheng"),
-           sep = "Sammenheng med annen statistikk") %>% 
-  separate(bak.sammenheng,
-           c("bak.sammenheng",
-             "bak.lov"),
-           sep = "Lovhjemmel") %>% 
-  separate(bak.lov,
-           c("bak.lov",
-             "bak.EEA"),
-           sep = "EØS-referanse")
+bakgrunn <- bokmaal %>% 
+  select(id, navn_statistikk, bak.1., bak.2., 
+         bak.3., bak.4., bak.5., bak.6.) %>%
+  rename("bak.formaal" = bak.1.,
+         "bak.bruk" = bak.2.,
+         "bak.likbe" = bak.3.,
+         "bak.sammenheng" = bak.4.,
+         "bak.lov" = bak.5.,
+         "bak.EEA" = bak.6.)
 
 ```
 
@@ -321,62 +285,35 @@ prod.konf: konfidensialitet
 prod.sammenligning: sammenlignbarhet over tid og sted
 ```{r}
 #Produksjon
-produksjon <- df %>% 
-  select(id, navn_statistikk, prod) %>% 
-  separate(prod,
-           c("prod.omfang", 
-             "prod.datakilder"),
-           sep = "Datakilder og utvalg") %>% 
-  separate(prod.datakilder,
-           c("prod.datakilder",
-             "prod.datainnsamling"),
-           sep = "Datainnsamling, editering og beregninger") %>% 
-  separate(prod.datainnsamling,
-           c("prod.datainnsamling",
-             "prod.sesong"),
-           sep = "Sesongjustering") %>% 
-  separate(prod.sesong,
-           c("prod.sesong",
-             "prod.konf"),
-           sep = "Konfidensialitet") %>% 
-  separate(prod.konf,
-           c("prod.konf",
-             "prod.sammenligning"),
-           sep = "Sammenlignbarhet over tid og sted")
-
-# Undersøker hvorfor det kommer NA noen steder hvor det bør være tekst.
-test <- df %>% 
-  select(id, navn_statistikk, prod) %>% 
-  separate(prod,
-           c("prod.omfang", 
-             "prod.datakilder",
-             "prod.datainnsamling",
-             "prod.sesong",
-             "prod.konf",
-             "prod.sammenligning"),
-           sep = "\n\n\r\r\n")
+produksjon <- bokmaal %>% 
+  select(id, navn_statistikk, prod.1., prod.2., 
+         prod.3., prod.4., prod.5., prod.6.) %>% 
+  rename("prod.omfang" = prod.1.,
+         "prod.datakilder" = prod.2.,
+         "prod.datainnsamling" = prod.3.,
+         "prod.sesong" = prod.4.,
+         "prod.konf" = prod.5.,
+         "prod.sammenligning" = prod.6.)
 ```
 
 Tabell med nøyaktighet of pålitelighet: 
 id: id
 navn_statistikk: navn på statistikken
-feil.kilde.usikkerhet: feilkilder og usikkerhet
+feil.kilde: feilkilder og usikkerhet
 feil.revisjon: revisjon
 ```{r}
 #Nøyaktighet og pålitelighet
-feil <- df %>% 
-  select(id, navn_statistikk, feil) %>% 
-  separate(feil,
-           c("feil.kilde.usikkerhet", 
-             "feil.revisjon"),
-           sep = "Revisjon")
+feil <- bokmaal %>% 
+  select(id, navn_statistikk, feil.1., feil.2.) %>% 
+  rename("feil.kilde" = feil.1.,
+         "feil.revisjon" = feil.2.)
 ```
 
 Relevant dokumentasjon består kun av linker, ingen sub-seksjoner.
 
 ```{r}
 #Relevant dokumentasjon
-reldok <- df %>% 
+reldok <- bokmaal %>% 
   select(id, navn_statistikk, reldok)
 ```
 
@@ -386,7 +323,7 @@ navn_statistikk: navnet på statistikken
 sesong.generelt: Generelt om sesongjustering
 sesong.hvorfor: Hvorfor sesongjusteres denne statistikken?
 sesong.prekorr: Prekorrigering
-sesong.sesongjust: Sesongjustering
+sesong.just: Sesongjustering
 sesong.revisjon: Revisjonsrutiner
 sesong.kvalitet: Kvalitet på sesongjustering
 sesong.spesielle: Spesielle tilfeller
@@ -395,56 +332,28 @@ sesong.relevant: Relevant dokumentasjon
 
 ```{r}
 # Om sesongjustering
-sesongjust <- df %>% 
-  select(navn_statistikk, sesong) %>% 
-  separate(sesong,
-           c("sesong.generelt",
-             "sesong.hvorfor",
-             "sesong.prekorr",
-             "sesong.sesongjust",
-             "sesong.revisjon",
-             "sesong.kvalitet",
-             "sesong.spesielle",
-             "sesong.publisering",
-             "sesong.relevant"),
-           sep = "\n\n\r\r\n") #%>% # Dennne koden fungerer for de fleste, men ikke for alle - noen koder har "Ikke relevant" og vil da ikke gå videre.
-  # separate(sesong.hvorfor,
-  #          c("sesong.hvorfor",
-  #            "sesong.prekorr"),
-  #          sep = "\n\n\r\r\n") %>% # Møter på problemer her, se sesongjust[12]
-  # separate(sesong.prekorr,
-  #          c("sesong.prekorr",
-  #            "sesong.sesongjust"),
-  #          sep = "Valg av sesongjusteringsmetode") %>% 
-  # separate(sesong.sesongjust,
-  #          c("sesong.sesongjust",
-  #            "sesong.revisjon"),
-  #          sep = "Revisjonsrutiner i bruk") %>% 
-  # separate(sesong.revisjon,
-  #          c("sesong.revisjon",
-  #            "sesong.kvalitet"),
-  #          sep = "Kvalitet på sesongjustering") %>% 
-  # separate(sesong.kvalitet,
-  #          c("sesong.kvalitet",
-  #            "sesong.spesielle"),
-  #          sep = "Spesielle tilfeller") %>% 
-  # separate(sesong.spesielle,
-  #          c("sesong.spesielle",
-  #            "sesong.publisering"),
-  #          sep = "Publiseringsrutiner") %>% 
-  # separate(sesong.publisering,
-  #          c("sesong.publisering",
-  #            "sesong.relevant"),
-  #          sep = "Relevant dokumentasjon")
+sesong <- bokmaal %>% 
+  select(id, navn_statistikk, sesong.1., sesong.2., 
+         sesong.3., sesong.4., sesong.5., sesong.6., 
+         sesong.7., sesong.8., sesong.9.) %>%
+  rename("sesong.generelt" = sesong.1.,
+         "sesong.hvorfor" = sesong.2.,
+         "sesong.prekorr" = sesong.3.,
+         "sesong.just" = sesong.4.,
+         "sesong.revisjon" = sesong.5.,
+         "sesong.kvalitet" = sesong.6.,
+         "sesong.spesielle" = sesong.7.,
+         "sesong.publisering" = sesong.8.,
+         "sesong.relevant" = sesong.9.)
 ```
 
 
 Fordi det som alltid må brukes for å sjekke NA, definisjoner, dokumentasjon osv. er hvilken seksjon som er ansvarlig lager egen tabell med for dette
 
 ```{r}
-#ansvarlig seksjon
-seksjon <- administrative %>% 
-  select(navn_statistikk, adm.seksjon)
+# ansvarlig seksjon
+seksjon <- df %>% 
+  select(id, navn_statistikk, adm.3., nynorsk)
 ```
 
 Når vi nå vil sjekke de forskjellige opplysningene opp mot seksjon, bruker vi diverse joins. (nytt dokument?)
