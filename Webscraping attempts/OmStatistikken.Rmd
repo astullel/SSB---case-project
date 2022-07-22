@@ -218,6 +218,12 @@ definisjoner <- bokmaal %>%
   select(id, navn_statistikk, def.1., def.2.) %>% # Legger id først
   rename("def.begrep" = def.1., # nye mer forståelige navn på variablene
          "def.klass" = def.2.)
+
+# Definisjonar
+ny_definisjonar <- nynorsk %>% # Definisjonar/definisjoner
+  select(id, navn_statistikk, def.1., def.2.) %>%
+  rename("def.omgrep" = def.1., # Omgrep/Begrep
+         "def.klass" = def.2.)
 ```
 
 Tabell med administrative opplysninger:
@@ -233,8 +239,21 @@ adm.lagring: lagring og anvendelse av grunnlagsmaterialet
 
 ```{r}
 # Administrative opplysninger
-
 administrative <- bokmaal %>% 
+  select(id, navn_statistikk, 
+         adm.1., adm.2., adm.3., 
+         adm.4., adm.5., adm.6., 
+         adm.7.) %>% 
+  rename("adm.opp" = adm.1.,
+         "adm.oppdat" = adm.2.,
+         "adm.seksjon" = adm.3.,
+         "adm.region" = adm.4.,
+         "adm.hyppighet" = adm.5.,
+         "adm.inter" = adm.6.,
+         "adm.lagring" = adm.7.)
+
+# Nynorsk
+ny_administrative <- nynorsk %>% 
   select(id, navn_statistikk, 
          adm.1., adm.2., adm.3., 
          adm.4., adm.5., adm.6., 
@@ -260,8 +279,7 @@ lov: lovhjemmel
 EEA: EØS-referanse
 
 ```{r}
-#Bakgrunn
-
+# Bakgrunn
 bakgrunn <- bokmaal %>% 
   select(id, navn_statistikk, bak.1., bak.2., 
          bak.3., bak.4., bak.5., bak.6.) %>%
@@ -272,6 +290,16 @@ bakgrunn <- bokmaal %>%
          "bak.lov" = bak.5.,
          "bak.EEA" = bak.6.)
 
+# Nynorsk
+ny_bakgrunn <- nynorsk %>% 
+  select(id, navn_statistikk, bak.1., bak.2., 
+         bak.3., bak.4., bak.5., bak.6.) %>%
+  rename("bak.formaal" = bak.1.,
+         "bak.bruk" = bak.2.,
+         "bak.likbe" = bak.3.,
+         "bak.samanheng" = bak.4., # Samanheng/sammenheng
+         "bak.lov" = bak.5.,
+         "bak.EEA" = bak.6.)
 ```
 
 Tabell for produksjon: 
@@ -284,7 +312,7 @@ prod.sesong: sesongsjustering
 prod.konf: konfidensialitet 
 prod.sammenligning: sammenlignbarhet over tid og sted
 ```{r}
-#Produksjon
+# Produksjon
 produksjon <- bokmaal %>% 
   select(id, navn_statistikk, prod.1., prod.2., 
          prod.3., prod.4., prod.5., prod.6.) %>% 
@@ -294,6 +322,17 @@ produksjon <- bokmaal %>%
          "prod.sesong" = prod.4.,
          "prod.konf" = prod.5.,
          "prod.sammenligning" = prod.6.)
+
+# Nynorsk
+ny_produksjon <- nynorsk %>% 
+  select(id, navn_statistikk, prod.1., prod.2., 
+         prod.3., prod.4., prod.5., prod.6.) %>% 
+  rename("prod.omfang" = prod.1.,
+         "prod.datakjelder" = prod.2., # Datakjelder/datakilder
+         "prod.datainnsamling" = prod.3.,
+         "prod.sesong" = prod.4.,
+         "prod.konf" = prod.5.,
+         "prod.samanlikning" = prod.6.) # Samanlikning/sammenligning
 ```
 
 Tabell med nøyaktighet of pålitelighet: 
@@ -302,18 +341,28 @@ navn_statistikk: navn på statistikken
 feil.kilde: feilkilder og usikkerhet
 feil.revisjon: revisjon
 ```{r}
-#Nøyaktighet og pålitelighet
+# Nøyaktighet og pålitelighet
 feil <- bokmaal %>% 
   select(id, navn_statistikk, feil.1., feil.2.) %>% 
   rename("feil.kilde" = feil.1.,
+         "feil.revisjon" = feil.2.)
+
+# Nynorsk
+ny_feil <- nynorsk %>% 
+  select(id, navn_statistikk, feil.1., feil.2.) %>% 
+  rename("feil.kjelde" = feil.1., # Kjelde/kilde
          "feil.revisjon" = feil.2.)
 ```
 
 Relevant dokumentasjon består kun av linker, ingen sub-seksjoner.
 
 ```{r}
-#Relevant dokumentasjon
+# Relevant dokumentasjon
 reldok <- bokmaal %>% 
+  select(id, navn_statistikk, reldok)
+
+# Nynorsk
+ny_reldok <- nynorsk %>% 
   select(id, navn_statistikk, reldok)
 ```
 
@@ -345,8 +394,45 @@ sesong <- bokmaal %>%
          "sesong.spesielle" = sesong.7.,
          "sesong.publisering" = sesong.8.,
          "sesong.relevant" = sesong.9.)
+
+# Nynorsk
+ny_sesong <- nynorsk %>% 
+  select(id, navn_statistikk, sesong.1., sesong.2., 
+         sesong.3., sesong.4., sesong.5., sesong.6., 
+         sesong.7., sesong.8., sesong.9.) %>%
+  rename("sesong.generelt" = sesong.1.,
+         "sesong.kvifor" = sesong.2., # Kvifor/hvorfor
+         "sesong.prekorr" = sesong.3.,
+         "sesong.just" = sesong.4.,
+         "sesong.revisjon" = sesong.5.,
+         "sesong.kvalitet" = sesong.6.,
+         "sesong.spesielle" = sesong.7.,
+         "sesong.publisering" = sesong.8.,
+         "sesong.relevant" = sesong.9.)
 ```
 
+# NA eller "Ikke relevant" per seksjon
+
+Definisjoner, NA:
+
+```{r}
+# Definisjoner - bokmål
+sum(is.na(definisjoner$def.begrep)) # 3
+sum(is.na(definisjoner$def.klass)) # 3
+
+# Definisjonar - nynorsk
+sum(is.na(ny_definisjonar$def.begrep)) # 0
+sum(is.na(ny_definisjonar$def.klass)) # 1
+```
+
+Definisjoner, Ikke relevant:
+
+```{r}
+
+```
+
+
+# Administrativ seksjon
 
 Fordi det som alltid må brukes for å sjekke NA, definisjoner, dokumentasjon osv. er hvilken seksjon som er ansvarlig lager egen tabell med for dette
 
